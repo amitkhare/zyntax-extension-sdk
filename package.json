@@ -1,0 +1,61 @@
+{
+  "name": "@zyntax/extension-sdk",
+  "version": "1.0.1",
+  "description": "Canonical public contracts and authoring helpers for Zyntax extensions.",
+  "author": "amitkhare",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/amitkhare/zyntax-extension-sdk.git"
+  },
+  "homepage": "https://github.com/amitkhare/zyntax-extension-sdk#readme",
+  "bugs": {
+    "url": "https://github.com/amitkhare/zyntax-extension-sdk/issues"
+  },
+  "keywords": [
+    "zyntax",
+    "extension",
+    "sdk"
+  ],
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./provider-methods": {
+      "types": "./dist/providerMethods.d.ts",
+      "import": "./dist/providerMethods.js"
+    },
+    "./manifest-constants": {
+      "types": "./dist/manifestConstants.d.ts",
+      "import": "./dist/manifestConstants.js"
+    },
+    "./capabilities": {
+      "types": "./dist/capabilities.d.ts",
+      "import": "./dist/capabilities.js"
+    }
+  },
+  "scripts": {
+    "build": "node ./scripts/build.mjs",
+    "prepare": "npm run build",
+    "typecheck": "tsc --noEmit -p ./tsconfig.json",
+    "test": "vitest run --config ./vitest.config.ts"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3",
+    "vitest": "4.1.10"
+  }
+}

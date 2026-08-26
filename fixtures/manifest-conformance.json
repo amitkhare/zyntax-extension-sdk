@@ -1,0 +1,1022 @@
+{
+  "formatVersion": 1,
+  "hostVersion": "0.9.0",
+  "baseManifest": {
+    "manifestVersion": 1,
+    "id": "zyntax.contract-fixture",
+    "name": "Contract Fixture",
+    "version": "1.0.0",
+    "publisher": "zyntax",
+    "engines": {
+      "zyntax": ">0.8.0"
+    },
+    "activationEvents": [],
+    "permissions": [],
+    "dependencies": [],
+    "toolRequirements": [],
+    "contributes": {
+      "languages": [
+        {
+          "id": "contract",
+          "extensions": [
+            ".contract"
+          ]
+        }
+      ]
+    }
+  },
+  "storeTools": [
+    {
+      "id": "zyntax.contract-tool",
+      "name": "Contract Language Server",
+      "kind": "languageServer",
+      "version": "1.0.0",
+      "platform": {
+        "os": "android",
+        "architecture": "arm64-v8a"
+      },
+      "capabilities": [
+        "formatter.document",
+        "language-server.lsp-stdio",
+        "service.persistent"
+      ],
+      "dependencies": [],
+      "runtimeRoot": "payload/bin",
+      "source": {
+        "kind": "store"
+      },
+      "size": 128,
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "contentSize": 1024,
+      "scratchSize": 0,
+      "license": "MIT",
+      "entrypoints": [
+        {
+          "id": "lsp",
+          "path": "payload/bin/contract-language-server"
+        }
+      ],
+      "resources": [
+        {
+          "id": "contract-module",
+          "path": "payload/lib/node_modules/contract-peer"
+        }
+      ],
+      "probes": [
+        {
+          "capability": "formatter.document",
+          "entrypoint": "lsp",
+          "args": [
+            "--version"
+          ],
+          "timeoutMs": 1000,
+          "maxOutputBytes": 4096,
+          "expectedStdout": "1.0.0\n"
+        },
+        {
+          "capability": "language-server.lsp-stdio",
+          "entrypoint": "lsp",
+          "args": [
+            "--version"
+          ],
+          "timeoutMs": 1000,
+          "maxOutputBytes": 4096,
+          "expectedStdout": "1.0.0\n"
+        },
+        {
+          "capability": "service.persistent",
+          "entrypoint": "lsp",
+          "args": [
+            "--version"
+          ],
+          "timeoutMs": 1000,
+          "maxOutputBytes": 4096,
+          "expectedStdout": "1.0.0\n"
+        }
+      ]
+    }
+  ],
+  "cases": [
+    {
+      "id": "permission-valid",
+      "area": "permission",
+      "valid": true,
+      "patch": {
+        "permissions": [
+          "network",
+          "workspace.read"
+        ]
+      }
+    },
+    {
+      "id": "permission-invalid",
+      "area": "permission",
+      "valid": false,
+      "patch": {
+        "permissions": [
+          "filesystem"
+        ]
+      }
+    },
+    {
+      "id": "activation-valid",
+      "area": "activation",
+      "valid": true,
+      "patch": {
+        "activationEvents": [
+          {
+            "kind": "document",
+            "language": "contract"
+          }
+        ]
+      }
+    },
+    {
+      "id": "language-multi-part-extension-valid",
+      "area": "language",
+      "valid": true,
+      "patch": {
+        "contributes": {
+          "languages": [
+            {
+              "id": "blade",
+              "extensions": [
+                ".blade.php"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "activation-invalid",
+      "area": "activation",
+      "valid": false,
+      "patch": {
+        "activationEvents": [
+          {
+            "kind": "document",
+            "language": "contract"
+          },
+          {
+            "kind": "document",
+            "language": "contract"
+          }
+        ]
+      }
+    },
+    {
+      "id": "provider-valid",
+      "area": "provider",
+      "valid": true,
+      "patch": {
+        "permissions": [
+          "extension.execute"
+        ],
+        "activationEvents": [
+          {
+            "kind": "provider",
+            "providerKind": "inlineCompletion",
+            "provider": "inline"
+          }
+        ],
+        "contributes": {
+          "inlineCompletionProviders": [
+            {
+              "id": "inline",
+              "module": "providers/inline.js",
+              "export": "createInline",
+              "languages": [
+                {
+                  "id": "javascript",
+                  "schemes": [
+                    "file"
+                  ],
+                  "group": "contract.inline",
+                  "priority": 100,
+                  "composition": "exclusive"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "provider-invalid",
+      "area": "provider",
+      "valid": false,
+      "patch": {
+        "permissions": [
+          "extension.execute"
+        ],
+        "activationEvents": [
+          {
+            "kind": "provider",
+            "providerKind": "inlineCompletion",
+            "provider": "inline"
+          }
+        ],
+        "contributes": {
+          "inlineCompletionProviders": [
+            {
+              "id": "inline",
+              "module": "../inline.js",
+              "export": "createInline",
+              "languages": [
+                {
+                  "id": "javascript",
+                  "schemes": [
+                    "file"
+                  ],
+                  "group": "contract.inline",
+                  "priority": 100,
+                  "composition": "exclusive"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "hover-provider-valid",
+      "area": "provider",
+      "valid": true,
+      "patch": {
+        "permissions": [
+          "extension.execute"
+        ],
+        "activationEvents": [
+          {
+            "kind": "provider",
+            "providerKind": "hover",
+            "provider": "hover"
+          }
+        ],
+        "contributes": {
+          "hoverProviders": [
+            {
+              "id": "hover",
+              "module": "providers/hover.js",
+              "export": "createHover",
+              "languages": [
+                {
+                  "id": "javascript",
+                  "schemes": [
+                    "file"
+                  ],
+                  "group": "contract.hover",
+                  "priority": 100,
+                  "composition": "additive"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "preview-provider-valid",
+      "area": "provider",
+      "valid": true,
+      "patch": {
+        "permissions": [
+          "extension.execute"
+        ],
+        "activationEvents": [
+          {
+            "kind": "provider",
+            "providerKind": "preview",
+            "provider": "preview"
+          }
+        ],
+        "contributes": {
+          "previewProviders": [
+            {
+              "id": "preview",
+              "module": "providers/preview.js",
+              "export": "createPreview",
+              "input": "document",
+              "paths": [
+                {
+                  "id": "svg",
+                  "glob": "*.svg",
+                  "schemes": [
+                    "file"
+                  ],
+                  "group": "contract.preview",
+                  "priority": 100,
+                  "composition": "exclusive"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "preview-provider-invalid",
+      "area": "provider",
+      "valid": false,
+      "patch": {
+        "permissions": [
+          "extension.execute"
+        ],
+        "activationEvents": [
+          {
+            "kind": "provider",
+            "providerKind": "preview",
+            "provider": "preview"
+          }
+        ],
+        "contributes": {
+          "previewProviders": [
+            {
+              "id": "preview",
+              "module": "providers/preview.js",
+              "export": "createPreview",
+              "input": "bytes",
+              "paths": [
+                {
+                  "id": "svg",
+                  "glob": "*.svg",
+                  "schemes": [
+                    "file"
+                  ],
+                  "group": "contract.preview",
+                  "priority": 100,
+                  "composition": "exclusive"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "task-provider-valid",
+      "area": "provider",
+      "valid": true,
+      "patch": {
+        "permissions": [
+          "extension.execute",
+          "tools.execute"
+        ],
+        "activationEvents": [
+          {
+            "kind": "provider",
+            "providerKind": "task",
+            "provider": "project-tasks"
+          }
+        ],
+        "contributes": {
+          "taskProviders": [
+            {
+              "id": "project-tasks",
+              "module": "providers/tasks.js",
+              "export": "createTasks",
+              "schemes": [
+                "file"
+              ],
+              "group": "project.tasks",
+              "priority": 100,
+              "composition": "additive",
+              "taskTypes": [
+                "build"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "task-provider-invalid",
+      "area": "provider",
+      "valid": false,
+      "patch": {
+        "permissions": [
+          "extension.execute"
+        ],
+        "activationEvents": [
+          {
+            "kind": "provider",
+            "providerKind": "task",
+            "provider": "project-tasks"
+          }
+        ],
+        "contributes": {
+          "taskProviders": [
+            {
+              "id": "project-tasks",
+              "module": "providers/tasks.js",
+              "export": "createTasks",
+              "schemes": [
+                "file"
+              ],
+              "group": "project.tasks",
+              "priority": 100,
+              "composition": "additive",
+              "taskTypes": [
+                "build"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "language-server-capabilities-valid",
+      "area": "managedTool",
+      "valid": true,
+      "patch": {
+        "permissions": [
+          "tools.execute"
+        ],
+        "activationEvents": [
+          {
+            "kind": "document",
+            "language": "contract"
+          }
+        ],
+        "toolRequirements": [
+          {
+            "id": "zyntax.contract-tool",
+            "version": "1.0.0",
+            "platforms": [
+              {
+                "os": "android",
+                "architecture": "arm64-v8a"
+              }
+            ],
+            "capabilities": [
+              "language-server.lsp-stdio"
+            ]
+          }
+        ],
+        "contributes": {
+          "languageServers": [
+            {
+              "id": "contract-server",
+              "execution": {
+                "tool": "zyntax.contract-tool",
+                "entrypoint": "lsp",
+                "args": [
+                  "--stdio"
+                ]
+              },
+              "languages": [
+                {
+                  "id": "contract",
+                  "languageId": "contract",
+                  "priority": 100,
+                  "capabilities": {
+                    "documentHighlights": [
+                      {
+                        "group": "contract",
+                        "role": "authoritative",
+                        "composition": "additive",
+                        "priority": 100,
+                        "languages": [
+                          "contract"
+                        ]
+                      }
+                    ],
+                    "documentSymbols": {
+                      "group": "contract",
+                      "role": "authoritative",
+                      "composition": "additive",
+                      "priority": 100
+                    },
+                    "foldingRanges": {
+                      "group": "contract",
+                      "role": "authoritative",
+                      "composition": "additive",
+                      "priority": 100
+                    }
+                  }
+                }
+              ],
+              "requestTimeoutMs": 10000,
+              "memoryLimitBytes": 268435456,
+              "maxMessageBytes": 4194304
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "language-server-highlights-shape-invalid",
+      "area": "managedTool",
+      "valid": false,
+      "patch": {
+        "permissions": [
+          "tools.execute"
+        ],
+        "toolRequirements": [
+          {
+            "id": "zyntax.contract-tool",
+            "version": "1.0.0",
+            "platforms": [
+              {
+                "os": "android",
+                "architecture": "arm64-v8a"
+              }
+            ],
+            "capabilities": [
+              "language-server.lsp-stdio"
+            ]
+          }
+        ],
+        "contributes": {
+          "languageServers": [
+            {
+              "id": "contract-server",
+              "execution": {
+                "tool": "zyntax.contract-tool",
+                "entrypoint": "lsp",
+                "args": [
+                  "--stdio"
+                ]
+              },
+              "languages": [
+                {
+                  "id": "contract",
+                  "languageId": "contract",
+                  "priority": 100,
+                  "capabilities": {
+                    "documentHighlights": {
+                      "group": "contract",
+                      "role": "authoritative",
+                      "composition": "additive",
+                      "priority": 100,
+                      "languages": [
+                        "contract"
+                      ]
+                    }
+                  }
+                }
+              ],
+              "requestTimeoutMs": 10000,
+              "memoryLimitBytes": 268435456,
+              "maxMessageBytes": 4194304
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "managed-tool-valid",
+      "area": "managedTool",
+      "valid": true,
+      "patch": {
+        "permissions": [
+          "tools.execute"
+        ],
+        "activationEvents": [
+          {
+            "kind": "document",
+            "language": "contract"
+          }
+        ],
+        "toolRequirements": [
+          {
+            "id": "zyntax.contract-tool",
+            "version": "1.0.0",
+            "platforms": [
+              {
+                "os": "android",
+                "architecture": "arm64-v8a"
+              }
+            ],
+            "capabilities": [
+              "language-server.lsp-stdio"
+            ]
+          }
+        ],
+        "contributes": {
+          "languageServers": [
+            {
+              "id": "contract-server",
+              "execution": {
+                "tool": "zyntax.contract-tool",
+                "entrypoint": "lsp",
+                "args": [
+                  "--stdio"
+                ]
+              },
+              "languages": [
+                {
+                  "id": "contract",
+                  "languageId": "contract",
+                  "priority": 100,
+                  "capabilities": {
+                    "completion": [
+                      {
+                        "group": "contract",
+                        "role": "authoritative",
+                        "composition": "exclusive",
+                        "priority": 100,
+                        "languages": [
+                          "contract"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ],
+              "requestTimeoutMs": 10000,
+              "memoryLimitBytes": 268435456,
+              "maxMessageBytes": 4194304
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "managed-tool-invalid",
+      "area": "managedTool",
+      "valid": false,
+      "patch": {
+        "permissions": [
+          "tools.execute"
+        ],
+        "activationEvents": [
+          {
+            "kind": "document",
+            "language": "contract"
+          }
+        ],
+        "toolRequirements": [
+          {
+            "id": "zyntax.contract-tool",
+            "version": "1.0.0",
+            "platforms": [
+              {
+                "os": "android",
+                "architecture": "arm64-v8a"
+              }
+            ],
+            "capabilities": [
+              "runtime.node"
+            ]
+          }
+        ],
+        "contributes": {
+          "languageServers": [
+            {
+              "id": "contract-server",
+              "execution": {
+                "tool": "zyntax.contract-tool",
+                "entrypoint": "lsp",
+                "args": [
+                  "--stdio"
+                ]
+              },
+              "languages": [
+                {
+                  "id": "contract",
+                  "languageId": "contract",
+                  "priority": 100,
+                  "capabilities": {
+                    "completion": [
+                      {
+                        "group": "contract",
+                        "role": "authoritative",
+                        "composition": "exclusive",
+                        "priority": 100,
+                        "languages": [
+                          "contract"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ],
+              "requestTimeoutMs": 10000,
+              "memoryLimitBytes": 268435456,
+              "maxMessageBytes": 4194304
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "persistent-service-valid",
+      "area": "managedTool",
+      "valid": true,
+      "patch": {
+        "permissions": [
+          "services.manage",
+          "tools.execute"
+        ],
+        "toolRequirements": [
+          {
+            "id": "zyntax.contract-tool",
+            "version": "1.0.0",
+            "platforms": [
+              {
+                "os": "android",
+                "architecture": "arm64-v8a"
+              }
+            ],
+            "capabilities": [
+              "service.persistent"
+            ]
+          }
+        ],
+        "contributes": {
+          "persistentServices": [
+            {
+              "id": "contract-service",
+              "label": "Contract Service",
+              "description": "A host-supervised contract fixture.",
+                "execution": {
+                  "tool": "zyntax.contract-tool",
+                  "entrypoint": "lsp"
+              },
+              "lifecycle": {
+                "stopSignal": "TERM",
+                "stopTimeoutMs": 4000
+              },
+              "probe": {
+                "kind": "process"
+              },
+              "log": {
+                "maxBytes": 65536
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "persistent-service-permission-invalid",
+      "area": "managedTool",
+      "valid": false,
+      "patch": {
+        "permissions": [
+          "tools.execute"
+        ],
+        "toolRequirements": [
+          {
+            "id": "zyntax.contract-tool",
+            "version": "1.0.0",
+            "platforms": [
+              {
+                "os": "android",
+                "architecture": "arm64-v8a"
+              }
+            ],
+            "capabilities": [
+              "service.persistent"
+            ]
+          }
+        ],
+        "contributes": {
+          "persistentServices": [
+            {
+              "id": "contract-service",
+              "label": "Contract Service",
+                "execution": {
+                  "tool": "zyntax.contract-tool",
+                  "entrypoint": "lsp"
+              },
+              "lifecycle": {
+                "stopSignal": "TERM",
+                "stopTimeoutMs": 4000
+              },
+              "probe": {
+                "kind": "process"
+              },
+              "log": {
+                "maxBytes": 65536
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "persistent-service-execution-invalid",
+      "area": "managedTool",
+      "valid": false,
+      "patch": {
+        "permissions": [
+          "services.manage",
+          "tools.execute"
+        ],
+        "toolRequirements": [
+          {
+            "id": "zyntax.contract-tool",
+            "version": "1.0.0",
+            "platforms": [
+              {
+                "os": "android",
+                "architecture": "arm64-v8a"
+              }
+            ],
+            "capabilities": [
+              "service.persistent"
+            ]
+          }
+        ],
+        "contributes": {
+          "persistentServices": [
+            {
+              "id": "contract-service",
+              "label": "Contract Service",
+              "execution": {
+                "tool": "zyntax.contract-tool",
+                "entrypoint": "lsp",
+                "args": [
+                  "--serve"
+                ]
+              },
+              "lifecycle": {
+                "stopSignal": "TERM",
+                "stopTimeoutMs": 4000
+              },
+              "probe": {
+                "kind": "process"
+              },
+              "log": {
+                "maxBytes": 65536
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "formatter-protocol-valid",
+      "area": "managedTool",
+      "valid": true,
+      "patch": {
+        "permissions": [
+          "tools.execute"
+        ],
+        "activationEvents": [
+          {
+            "kind": "formatter",
+            "formatter": "contract-format"
+          }
+        ],
+        "toolRequirements": [
+          {
+            "id": "zyntax.contract-tool",
+            "version": "1.0.0",
+            "platforms": [
+              {
+                "os": "android",
+                "architecture": "arm64-v8a"
+              }
+            ],
+            "capabilities": [
+              "formatter.document"
+            ]
+          }
+        ],
+        "contributes": {
+          "formatters": [
+            {
+              "id": "contract-format",
+              "protocol": "raw-stdio",
+              "execution": {
+                "tool": "zyntax.contract-tool",
+                "entrypoint": "lsp",
+                "args": [
+                  "fmt",
+                  "--peer",
+                  {
+                    "$toolResource": {
+                      "tool": "zyntax.contract-tool",
+                      "resource": "contract-module"
+                    }
+                  },
+                  "--stdin-name",
+                  {
+                    "$documentPath": "current"
+                  }
+                ],
+                "nodeModules": [
+                  {
+                    "name": "contract-peer",
+                    "resource": {
+                      "$toolResource": {
+                        "tool": "zyntax.contract-tool",
+                        "resource": "contract-module"
+                      }
+                    }
+                  }
+                ]
+              },
+              "languages": [
+                {
+                  "id": "contract",
+                  "priority": 100
+                }
+              ],
+              "requestTimeoutMs": 10000,
+              "memoryLimitBytes": 268435456,
+              "maxMessageBytes": 4194304
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "formatter-protocol-invalid",
+      "area": "managedTool",
+      "valid": false,
+      "patch": {
+        "permissions": [
+          "tools.execute"
+        ],
+        "activationEvents": [
+          {
+            "kind": "formatter",
+            "formatter": "contract-format"
+          }
+        ],
+        "toolRequirements": [
+          {
+            "id": "zyntax.contract-tool",
+            "version": "1.0.0",
+            "platforms": [
+              {
+                "os": "android",
+                "architecture": "arm64-v8a"
+              }
+            ],
+            "capabilities": [
+              "formatter.document"
+            ]
+          }
+        ],
+        "contributes": {
+          "formatters": [
+            {
+              "id": "contract-format",
+              "protocol": "stdio",
+              "execution": {
+                "tool": "zyntax.contract-tool",
+                "entrypoint": "lsp",
+                "args": [
+                  "fmt",
+                  "--ext=contract",
+                  "-"
+                ]
+              },
+              "languages": [
+                {
+                  "id": "contract",
+                  "priority": 100
+                }
+              ],
+              "requestTimeoutMs": 10000,
+              "memoryLimitBytes": 268435456,
+              "maxMessageBytes": 4194304
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "workbench-valid",
+      "area": "workbench",
+      "valid": true,
+      "patch": {
+        "contributes": {
+          "workbench": [
+            {
+              "kind": "status",
+              "id": "contract-status",
+              "placement": "status.left",
+              "text": "Ready",
+              "icon": "check"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "workbench-invalid",
+      "area": "workbench",
+      "valid": false,
+      "patch": {
+        "contributes": {
+          "workbench": [
+            {
+              "kind": "status",
+              "id": "contract-status",
+              "placement": "status.center",
+              "text": "Ready",
+              "icon": "check"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
