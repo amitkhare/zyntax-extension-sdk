@@ -19,6 +19,7 @@ import type {
   ExtensionTerminalPackageTransactionReceipt,
   ExtensionTerminalPackageTransactionSnapshot,
 } from "./contracts/terminalPackages.js";
+import type { EXTENSION_NOTEBOOK_KERNEL_PROTOCOL } from "./notebookKernelProtocol.js";
 
 export type * from "./contracts/manifest.js";
 export { EXTENSION_PROVIDER_METHODS } from "./providerMethods.js";
@@ -54,6 +55,7 @@ export type * from "./agent/protocol.js";
 export type * from "./extensionFirst.js";
 export type * from "./contracts/persistentServices.js";
 export type * from "./contracts/terminalPackages.js";
+export * from "./notebookKernelProtocol.js";
 
 export interface ExtensionDisposable {
   dispose(): void | Promise<void>;
@@ -569,9 +571,159 @@ export interface ExtensionNotebookSerializerProvider extends ExtensionDisposable
   ): ExtensionNotebookData | Promise<ExtensionNotebookData>;
 }
 
+export interface ExtensionNotebookKernelCellInput {
+  readonly cellId: string;
+  readonly languageId: string;
+  readonly content: string;
+  readonly metadata: ExtensionJsonObject;
+}
+
+export interface ExtensionNotebookKernelInitializeRequest {
+  readonly projectUri: string;
+  readonly notebookUri: string;
+  readonly notebookType: string;
+  readonly languages: readonly string[];
+  readonly kernelGeneration: number;
+}
+
+export interface ExtensionNotebookKernelInitializeResult {
+  readonly kernelGeneration: number;
+}
+
 export interface ExtensionNotebookExecutionRequest {
-  readonly document: ExtensionNotebookDocumentSnapshot;
-  readonly cellIds: readonly string[];
+  readonly executionId: string;
+  readonly kernelGeneration: number;
+  readonly documentVersion: number;
+  readonly documentGeneration: number;
+  readonly cells: readonly ExtensionNotebookKernelCellInput[];
+}
+
+export type ExtensionNotebookCellExecutionOutcome =
+  | "success"
+  | "error"
+  | "cancelled";
+
+export interface ExtensionNotebookCellExecutionResult {
+  readonly cellId: string;
+  readonly outcome: ExtensionNotebookCellExecutionOutcome;
+  readonly executionOrder: number | null;
+}
+
+export interface ExtensionNotebookExecutionResult {
+  readonly executionId: string;
+  readonly kernelGeneration: number;
+  readonly documentVersion: number;
+  readonly documentGeneration: number;
+  readonly cells: readonly ExtensionNotebookCellExecutionResult[];
+}
+
+export type ExtensionNotebookKernelStatus =
+  | "starting"
+  | "idle"
+  | "busy"
+  | "restarting"
+  | "stopping";
+
+export type ExtensionNotebookOutputMutation =
+  | Readonly<{
+      operation: "append";
+      cellId: string;
+      output: ExtensionNotebookOutput;
+    }>
+  | Readonly<{
+      operation: "replace";
+      cellId: string;
+      output: ExtensionNotebookOutput;
+    }>
+  | Readonly<{
+      operation: "clear";
+      cellId: string;
+      wait: boolean;
+    }>;
+
+export type ExtensionNotebookCommMessage =
+  | Readonly<{
+      operation: "open";
+      commId: string;
+      target: string;
+      data: ExtensionJsonObject;
+      buffers: readonly ExtensionNotebookData[];
+    }>
+  | Readonly<{
+      operation: "message";
+      commId: string;
+      data: ExtensionJsonObject;
+      buffers: readonly ExtensionNotebookData[];
+    }>
+  | Readonly<{
+      operation: "close";
+      commId: string;
+      data: ExtensionJsonObject;
+    }>;
+
+interface ExtensionNotebookKernelEventBase {
+  readonly sequence: number;
+  readonly kernelGeneration: number;
+  readonly executionId: string | null;
+}
+
+export type ExtensionNotebookKernelEvent =
+  | (ExtensionNotebookKernelEventBase & Readonly<{
+      kind: "status";
+      status: ExtensionNotebookKernelStatus;
+    }>)
+  | (ExtensionNotebookKernelEventBase & Readonly<{
+      kind: "output";
+      mutation: ExtensionNotebookOutputMutation;
+    }>)
+  | (ExtensionNotebookKernelEventBase & Readonly<{
+      kind: "comm";
+      message: ExtensionNotebookCommMessage;
+    }>);
+
+export interface ExtensionNotebookKernelInputRequest {
+  readonly kernelGeneration: number;
+  readonly executionId: string;
+  readonly cellId: string;
+  readonly prompt: string;
+  readonly password: boolean;
+}
+
+export type ExtensionNotebookKernelInputResult =
+  | Readonly<{ kind: "value"; value: string }>
+  | Readonly<{ kind: "cancelled" }>;
+
+export interface ExtensionNotebookKernelCommRequest {
+  readonly kernelGeneration: number;
+  readonly executionId: string | null;
+  readonly message: ExtensionNotebookCommMessage;
+}
+
+export interface ExtensionNotebookKernelInterruptRequest {
+  readonly kernelGeneration: number;
+  readonly executionId: string;
+}
+
+export interface ExtensionNotebookKernelInterruptResult {
+  readonly executionId: string;
+  readonly accepted: boolean;
+}
+
+export interface ExtensionNotebookKernelRestartRequest {
+  readonly kernelGeneration: number;
+  readonly nextKernelGeneration: number;
+}
+
+export interface ExtensionNotebookKernelRestartResult {
+  readonly kernelGeneration: number;
+}
+
+export interface ExtensionNotebookKernelShutdownRequest {
+  readonly kernelGeneration: number;
+}
+
+export interface ExtensionNotebookKernelShutdownResult {
+  readonly kernelGeneration: number;
 }
 
 /**
@@ -584,7 +736,7 @@ export interface ExtensionNotebookKernelDescriptor {
   readonly tool: string;
   readonly entrypoint: string;
   readonly arguments: readonly string[];
-  readonly protocol: "zyntax-notebook-jsonrpc";
+  readonly protocol: typeof EXTENSION_NOTEBOOK_KERNEL_PROTOCOL;
 }
 
 export interface ExtensionNotebookKernelDescriptorRequest {
@@ -592,19 +744,6 @@ export interface ExtensionNotebookKernelDescriptorRequest {
   readonly notebookUri: string;
   readonly notebookType: string;
   readonly languages: readonly string[];
-}
-
-export interface ExtensionNotebookCellExecutionResult {
-  readonly cellId: string;
-  readonly success: boolean;
-  readonly executionOrder: number;
-  readonly outputs: readonly ExtensionNotebookOutput[];
-}
-
-export interface ExtensionNotebookExecutionResult {
-  readonly documentVersion: number;
-  readonly documentGeneration: number;
-  readonly cells: readonly ExtensionNotebookCellExecutionResult[];
 }
 
 export interface ExtensionNotebookKernelProvider extends ExtensionDisposable {

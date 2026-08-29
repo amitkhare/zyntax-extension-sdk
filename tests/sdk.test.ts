@@ -19,6 +19,17 @@ import {
   EXTENSION_MANAGED_TOOL_MAX_FRAME_BYTES,
   EXTENSION_MANAGED_TOOL_MAX_REQUEST_BYTES,
   EXTENSION_MANAGED_TOOL_MAX_RESULT_BYTES,
+  EXTENSION_NOTEBOOK_KERNEL_CANCEL_METHOD,
+  EXTENSION_NOTEBOOK_KERNEL_COMM_METHOD,
+  EXTENSION_NOTEBOOK_KERNEL_EVENT_METHOD,
+  EXTENSION_NOTEBOOK_KERNEL_EXECUTE_METHOD,
+  EXTENSION_NOTEBOOK_KERNEL_INITIALIZE_METHOD,
+  EXTENSION_NOTEBOOK_KERNEL_INPUT_METHOD,
+  EXTENSION_NOTEBOOK_KERNEL_INTERRUPT_METHOD,
+  EXTENSION_NOTEBOOK_KERNEL_JSON_RPC_VERSION,
+  EXTENSION_NOTEBOOK_KERNEL_PROTOCOL,
+  EXTENSION_NOTEBOOK_KERNEL_RESTART_METHOD,
+  EXTENSION_NOTEBOOK_KERNEL_SHUTDOWN_METHOD,
   EXTENSION_JSON_MAX_DEPTH,
   EXTENSION_JSON_MAX_KEY_CODE_UNITS,
   EXTENSION_JSON_MAX_NODES,
@@ -53,6 +64,10 @@ import {
   type ExtensionJsonValue,
   type ExtensionLanguageServerCapabilityMatrix,
   type ExtensionNetworkRequest,
+  type ExtensionNotebookExecutionRequest,
+  type ExtensionNotebookKernelEvent,
+  type ExtensionNotebookKernelInputResult,
+  type ExtensionNotebookKernelRestartRequest,
   type ExtensionPreviewProvider,
   type ExtensionPreviewProviderContribution,
   type ExtensionPreviewRequest,
@@ -101,6 +116,29 @@ describe("public extension SDK", () => {
     expect(EXTENSION_MANAGED_TOOL_MAX_FRAME_BYTES).toBe(4 * 1024 * 1024);
     expect(EXTENSION_MANAGED_TOOL_MAX_REQUEST_BYTES).toBe((4 * 1024 * 1024) - (4 * 1024));
     expect(EXTENSION_MANAGED_TOOL_MAX_RESULT_BYTES).toBe((4 * 1024 * 1024) - (4 * 1024));
+    expect(EXTENSION_NOTEBOOK_KERNEL_PROTOCOL).toBe("zyntax-notebook-jsonrpc");
+    expect(EXTENSION_NOTEBOOK_KERNEL_JSON_RPC_VERSION).toBe("2.0");
+    expect([
+      EXTENSION_NOTEBOOK_KERNEL_INITIALIZE_METHOD,
+      EXTENSION_NOTEBOOK_KERNEL_EXECUTE_METHOD,
+      EXTENSION_NOTEBOOK_KERNEL_INTERRUPT_METHOD,
+      EXTENSION_NOTEBOOK_KERNEL_RESTART_METHOD,
+      EXTENSION_NOTEBOOK_KERNEL_SHUTDOWN_METHOD,
+      EXTENSION_NOTEBOOK_KERNEL_EVENT_METHOD,
+      EXTENSION_NOTEBOOK_KERNEL_INPUT_METHOD,
+      EXTENSION_NOTEBOOK_KERNEL_COMM_METHOD,
+      EXTENSION_NOTEBOOK_KERNEL_CANCEL_METHOD,
+    ]).toEqual([
+      "zyntax/notebook/initialize",
+      "zyntax/notebook/execute",
+      "zyntax/notebook/interrupt",
+      "zyntax/notebook/restart",
+      "zyntax/notebook/shutdown",
+      "zyntax/notebook/event",
+      "zyntax/notebook/input",
+      "zyntax/notebook/comm",
+      "$/cancelRequest",
+    ]);
     expect(EXTENSION_DIAGNOSTICS_MAX_BYTES).toBe((4 * 1024 * 1024) - (4 * 1024));
     expect(EXTENSION_DIAGNOSTICS_MAX_ITEMS).toBe(16_384);
     expect(EXTENSION_DIAGNOSTICS_MAX_TOTAL_BYTES).toBe(16 * 1024 * 1024);
@@ -167,6 +205,32 @@ describe("public extension SDK", () => {
       documentSymbols?: object;
       foldingRanges?: object;
     }>();
+    expectTypeOf<ExtensionNotebookExecutionRequest>().toMatchTypeOf<{
+      readonly executionId: string;
+      readonly kernelGeneration: number;
+      readonly documentVersion: number;
+      readonly documentGeneration: number;
+      readonly cells: readonly {
+        readonly cellId: string;
+        readonly languageId: string;
+        readonly content: string;
+      }[];
+    }>();
+    expectTypeOf<ExtensionNotebookKernelRestartRequest>().toEqualTypeOf<{
+      readonly kernelGeneration: number;
+      readonly nextKernelGeneration: number;
+    }>();
+    expectTypeOf<ExtensionNotebookKernelInputResult>().toEqualTypeOf<
+      | Readonly<{ kind: "value"; value: string }>
+      | Readonly<{ kind: "cancelled" }>
+    >();
+    expectTypeOf<Extract<
+      ExtensionNotebookKernelEvent,
+      { readonly kind: "output" }
+    >["mutation"]>().toMatchTypeOf<
+      | { readonly operation: "append" | "replace"; readonly cellId: string }
+      | { readonly operation: "clear"; readonly cellId: string; readonly wait: boolean }
+    >();
     expectTypeOf<
       [] extends ExtensionAssistedEditProviderContribution["languages"]
         ? true

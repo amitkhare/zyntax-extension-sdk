@@ -36,6 +36,19 @@ export const createCompletionProvider = defineCompletionProvider(
 Manifest validation remains host/tooling-owned. The SDK does not grant
 permissions or platform access.
 
+## Notebook kernels
+
+A notebook-kernel provider returns only a symbolic managed-tool descriptor. The
+host owns the adapter process and its full-duplex framed JSON-RPC session. The
+public protocol defines initialization, execution, strictly ordered
+status/output/comm events, kernel-to-host input requests, explicit interrupt and
+restart generations, cancellation, and idempotent shutdown. Output events are
+authoritative and are not duplicated in the final execution result.
+
+Kernel adapters remain runtime-neutral. They must not expose native paths,
+process handles, transport sockets, or renderer objects, and the host never
+infers a runtime from a notebook language or file name.
+
 Language-server mappings declare only verified routes. Position routes are
 `completion`, `hover`, `signatureHelp`, `definition`, `implementation`,
 `typeDefinition`, `references`, `rename`, `codeActions`, `typeHierarchy`, and
