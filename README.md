@@ -43,7 +43,10 @@ host owns the adapter process and its full-duplex framed JSON-RPC session. The
 public protocol defines initialization, execution, strictly ordered
 status/output/comm events, kernel-to-host input requests, explicit interrupt and
 restart generations, cancellation, and idempotent shutdown. Output events are
-authoritative and are not duplicated in the final execution result.
+authoritative and are not duplicated in the final execution result. Event
+sequence numbers increase across the complete adapter session, including kernel
+restarts. A restart response commits the new generation before the adapter emits
+any event for that generation.
 
 Kernel adapters remain runtime-neutral. They must not expose native paths,
 process handles, transport sockets, or renderer objects, and the host never

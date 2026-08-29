@@ -662,6 +662,7 @@ export type ExtensionNotebookCommMessage =
     }>;
 
 interface ExtensionNotebookKernelEventBase {
+  /** Monotonically increases across the complete adapter session, including restarts. */
   readonly sequence: number;
   readonly kernelGeneration: number;
   readonly executionId: string | null;
@@ -715,6 +716,10 @@ export interface ExtensionNotebookKernelRestartRequest {
 }
 
 export interface ExtensionNotebookKernelRestartResult {
+  /**
+   * Commits the new generation. The adapter must return this response before
+   * emitting any event whose kernelGeneration equals this value.
+   */
   readonly kernelGeneration: number;
 }
 
