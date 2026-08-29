@@ -5,6 +5,10 @@ import {
   EXTENSION_CONTRIBUTION_FIELDS,
   EXTENSION_DEVELOPMENT_STACK_MAX_CONTRIBUTIONS,
   EXTENSION_DEVELOPMENT_STACK_MAX_REQUIREMENTS,
+  EXTENSION_DIAGNOSTICS_MAX_BYTES,
+  EXTENSION_DIAGNOSTICS_MAX_ITEMS,
+  EXTENSION_DIAGNOSTICS_MAX_TOTAL_BYTES,
+  EXTENSION_DIAGNOSTICS_MAX_TOTAL_ITEMS,
   EXTENSION_EXECUTION_MAX_ARGUMENT_LENGTH,
   EXTENSION_EXECUTION_MAX_ARGUMENTS,
   EXTENSION_LSP_DOCUMENT_CAPABILITIES,
@@ -12,8 +16,18 @@ import {
   EXTENSION_LSP_POSITION_CAPABILITIES,
   EXTENSION_MANAGED_TOOL_INVOCATION_METHOD,
   EXTENSION_MANAGED_TOOL_JSON_RPC_VERSION,
+  EXTENSION_MANAGED_TOOL_MAX_FRAME_BYTES,
+  EXTENSION_MANAGED_TOOL_MAX_REQUEST_BYTES,
+  EXTENSION_MANAGED_TOOL_MAX_RESULT_BYTES,
+  EXTENSION_JSON_MAX_DEPTH,
+  EXTENSION_JSON_MAX_KEY_CODE_UNITS,
+  EXTENSION_JSON_MAX_NODES,
   EXTENSION_PROVIDER_METHODS,
   EXTENSION_PERMISSIONS,
+  EXTENSION_PREVIEW_MAX_INPUT_BYTES,
+  EXTENSION_PREVIEW_MAX_BINARY_INPUT_BYTES,
+  EXTENSION_PREVIEW_MAX_RESULT_BYTES,
+  EXTENSION_TASK_PROVIDER_MAX_ITEMS,
   EXTENSION_TERMINAL_PACKAGE_MAX_REQUEST_BYTES,
   EXTENSION_TERMINAL_PACKAGE_MAX_RESULT_BYTES,
   EXTENSION_TERMINAL_PACKAGE_REPOSITORIES,
@@ -24,6 +38,7 @@ import {
   defineProviderModule,
   definePreviewProvider,
   defineProjectTemplateProvider,
+  extensionJsonUtf8ByteLength,
   isExtensionExecutionArgument,
   throwIfCancellationRequested,
   type ExtensionCompletionProvider,
@@ -31,6 +46,7 @@ import {
   type ExtensionHostCapabilityMap,
   type ExtensionHostApi,
   type ExtensionHoverProvider,
+  type ExtensionHtmlPreviewPolicy,
   type ExtensionHostTerminalProfileDescriptor,
   type ExtensionTerminalPackageIntent,
   type ExtensionTerminalPackageTransactionReceipt,
@@ -48,6 +64,14 @@ import {
 } from "../src/index.js";
 
 describe("public extension SDK", () => {
+  it("keeps inline HTML previews script-blocked", () => {
+    const policy: ExtensionHtmlPreviewPolicy = { subresources: "project" };
+    expect(policy).toEqual({ subresources: "project" });
+    // @ts-expect-error Script policy is host-owned and not an extension contract.
+    const scripted: ExtensionHtmlPreviewPolicy = { subresources: "project", scripts: "allow" };
+    void scripted;
+  });
+
   it("creates immutable host-resolved debug document paths", () => {
     const reference = debugDocumentPath("file:///project/main.py");
     expect(reference).toEqual({ $documentPath: "file:///project/main.py" });
@@ -74,6 +98,20 @@ describe("public extension SDK", () => {
     expect(EXTENSION_API_VERSION).toBe(1);
     expect(EXTENSION_MANAGED_TOOL_JSON_RPC_VERSION).toBe("2.0");
     expect(EXTENSION_MANAGED_TOOL_INVOCATION_METHOD).toBe("zyntax/toolInvocation");
+    expect(EXTENSION_MANAGED_TOOL_MAX_FRAME_BYTES).toBe(4 * 1024 * 1024);
+    expect(EXTENSION_MANAGED_TOOL_MAX_REQUEST_BYTES).toBe((4 * 1024 * 1024) - (4 * 1024));
+    expect(EXTENSION_MANAGED_TOOL_MAX_RESULT_BYTES).toBe((4 * 1024 * 1024) - (4 * 1024));
+    expect(EXTENSION_DIAGNOSTICS_MAX_BYTES).toBe((4 * 1024 * 1024) - (4 * 1024));
+    expect(EXTENSION_DIAGNOSTICS_MAX_ITEMS).toBe(16_384);
+    expect(EXTENSION_DIAGNOSTICS_MAX_TOTAL_BYTES).toBe(16 * 1024 * 1024);
+    expect(EXTENSION_DIAGNOSTICS_MAX_TOTAL_ITEMS).toBe(65_536);
+    expect(EXTENSION_TASK_PROVIDER_MAX_ITEMS).toBe(4_096);
+    expect(EXTENSION_PREVIEW_MAX_INPUT_BYTES).toBe(10 * 1024 * 1024);
+    expect(EXTENSION_PREVIEW_MAX_BINARY_INPUT_BYTES).toBe(24 * 1024 * 1024);
+    expect(EXTENSION_PREVIEW_MAX_RESULT_BYTES).toBe(16 * 1024 * 1024);
+    expect(EXTENSION_JSON_MAX_DEPTH).toBe(60);
+    expect(EXTENSION_JSON_MAX_NODES).toBe(1_000_000 - 16);
+    expect(EXTENSION_JSON_MAX_KEY_CODE_UNITS).toBe(256);
     expect(EXTENSION_EXECUTION_MAX_ARGUMENTS).toBe(32);
     expect(EXTENSION_EXECUTION_MAX_ARGUMENT_LENGTH).toBe(512);
     expect(EXTENSION_PERMISSIONS).toContain("terminal.packages");
@@ -140,9 +178,98 @@ describe("public extension SDK", () => {
         module: "providers/preview.js";
         export: "createPreview";
         input: "text";
+        placement: "adjacent";
+        encoding: "utf8";
         paths: [];
       } extends ExtensionPreviewProviderContribution ? true : false
     >().toEqualTypeOf<false>();
+    expectTypeOf<
+      {
+        id: "preview";
+        module: "providers/preview.js";
+        export: "createPreview";
+        input: "text";
+        placement: "adjacent";
+        languages: [{
+          id: "example";
+          schemes: ["file"];
+          group: "example.preview";
+          priority: 100;
+          composition: "exclusive";
+        }];
+      } extends ExtensionPreviewProviderContribution ? true : false
+    >().toEqualTypeOf<false>();
+    expectTypeOf<
+      {
+        id: "preview";
+        module: "providers/preview.js";
+        export: "createPreview";
+        input: "text";
+        encoding: "utf8";
+        languages: [{
+          id: "example";
+          schemes: ["file"];
+          group: "example.preview";
+          priority: 100;
+          composition: "exclusive";
+        }];
+      } extends ExtensionPreviewProviderContribution ? true : false
+    >().toEqualTypeOf<false>();
+    expectTypeOf<
+      {
+        id: "preview";
+        module: "providers/preview.js";
+        export: "createPreview";
+        input: "text";
+        placement: "adjacent";
+        encoding: "base64";
+        languages: [{
+          id: "example";
+          schemes: ["file"];
+          group: "example.preview";
+          priority: 100;
+          composition: "exclusive";
+        }];
+      } extends ExtensionPreviewProviderContribution ? true : false
+    >().toEqualTypeOf<false>();
+    expectTypeOf<
+      {
+        id: "preview";
+        module: "providers/preview.js";
+        export: "createPreview";
+        input: "document";
+        placement: "adjacent";
+        encoding: "base64";
+        paths: [{
+          id: "example";
+          glob: "*.png";
+          schemes: ["file"];
+          group: "example.preview";
+          priority: 100;
+          composition: "exclusive";
+        }];
+      } extends ExtensionPreviewProviderContribution ? true : false
+    >().toEqualTypeOf<false>();
+  });
+
+  it("measures exact host-neutral UTF-8 JSON bytes", () => {
+    expect(extensionJsonUtf8ByteLength("a")).toBe(3);
+    expect(extensionJsonUtf8ByteLength("界")).toBe(5);
+    expect(extensionJsonUtf8ByteLength("😀")).toBe(6);
+    expect(() => extensionJsonUtf8ByteLength("\ud800")).toThrow("invalid Unicode");
+    expect(() => extensionJsonUtf8ByteLength(undefined)).toThrow("not serializable");
+    expect(() => extensionJsonUtf8ByteLength({
+      ["x".repeat(EXTENSION_JSON_MAX_KEY_CODE_UNITS + 1)]: null,
+    })).toThrow("key exceeds");
+
+    let deeplyNested: unknown = null;
+    for (let depth = 0; depth < EXTENSION_JSON_MAX_DEPTH; depth += 1) {
+      deeplyNested = [deeplyNested];
+    }
+    expect(extensionJsonUtf8ByteLength(deeplyNested)).toBe(124);
+    expect(() => extensionJsonUtf8ByteLength([deeplyNested])).toThrow(
+      "structural limit",
+    );
   });
 
   it("reserves the provider module API version for the SDK", () => {
@@ -182,7 +309,12 @@ describe("public extension SDK", () => {
               encoding: "utf8",
               alt: "Vector image",
             }
-          : { kind: "tokens", tokens: [] },
+          : {
+              kind: "markup",
+              format: "html",
+              content: "<p>Preview</p>",
+              scroll: "independent",
+            },
         issues: [],
       }),
       dispose() {},

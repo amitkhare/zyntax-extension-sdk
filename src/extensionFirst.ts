@@ -285,6 +285,14 @@ export interface ExtensionTextPreviewBody {
   readonly content: string;
 }
 
+/** Bounded inert semantic markup sanitized and theme-rendered by the host. */
+export interface ExtensionMarkupPreviewBody {
+  readonly kind: "markup";
+  readonly format: "html";
+  readonly content: string;
+  readonly scroll: "linked" | "independent";
+}
+
 export type ExtensionPreviewMediaType =
   | "image/avif"
   | "image/bmp"
@@ -295,10 +303,8 @@ export type ExtensionPreviewMediaType =
   | "image/vnd.microsoft.icon"
   | "image/webp";
 
-/** Explicit execution and resource policy for an isolated HTML resource session. */
+/** Project-resource policy for a script-blocked HTML resource session. */
 export interface ExtensionHtmlPreviewPolicy {
-  readonly scripts: "allow" | "block";
-  readonly console: "eruda" | "disabled";
   readonly subresources: "project" | "none";
 }
 
@@ -336,77 +342,12 @@ export type ExtensionResourcePreviewBody =
   | ExtensionSvgResourcePreviewBody
   | ExtensionImageResourcePreviewBody;
 
-export type ExtensionPreviewTone =
-  | "neutral"
-  | "accent"
-  | "success"
-  | "info"
-  | "warning"
-  | "danger"
-  | "purple"
-  | "pink";
-
-export interface ExtensionInspectorBadge {
-  readonly label: string;
-  readonly tone: ExtensionPreviewTone;
-}
-
-export interface ExtensionInspectorItem {
-  readonly label: string;
-  readonly detail?: string;
-  readonly marker?: string;
-  readonly tone?: ExtensionPreviewTone;
-}
-
-export interface ExtensionInspectorSection {
-  readonly id: string;
-  readonly title: string;
-  readonly items: readonly ExtensionInspectorItem[];
-}
-
-export interface ExtensionInspectorTreeNode {
-  readonly label: string;
-  readonly depth: number;
-  readonly kind: "element" | "component";
-  readonly tags: readonly string[];
-}
-
-export interface ExtensionInspectorCodeSection {
-  readonly id: string;
-  readonly title: string;
-  readonly languageId: string;
-  readonly content: string;
-}
-
-/** Bounded data-only inspection model rendered entirely by the host. */
-export interface ExtensionInspectorPreviewBody {
-  readonly kind: "inspector";
-  readonly badges: readonly ExtensionInspectorBadge[];
-  readonly sections: readonly ExtensionInspectorSection[];
-  readonly tree: readonly ExtensionInspectorTreeNode[];
-  readonly code: readonly ExtensionInspectorCodeSection[];
-}
-
-export interface ExtensionPreviewToken {
-  readonly name: string;
-  readonly value: string;
-  readonly scope: string;
-  readonly category: "font" | "other";
-}
-
-/** Safe host-rendered design-token cards. CSS interpretation remains host-owned. */
-export interface ExtensionTokensPreviewBody {
-  readonly kind: "tokens";
-  readonly tokens: readonly ExtensionPreviewToken[];
-}
-
 export type ExtensionPreviewBody =
   | ExtensionStructuredPreviewBody
   | ExtensionTablePreviewBody
   | ExtensionTextPreviewBody
-  | ExtensionResourcePreviewBody
-  | ExtensionInspectorPreviewBody
-  | ExtensionTokensPreviewBody;
+  | ExtensionMarkupPreviewBody
+  | ExtensionResourcePreviewBody;
 
 export interface ExtensionPreviewSelectorMatch {
   readonly id: string;

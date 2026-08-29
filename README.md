@@ -86,6 +86,12 @@ and JSON-RPC request/response types over the host's Content-Length-framed stdio
 transport. Extension code selects only a manifest-declared tool and entrypoint;
 it never supplies an executable path, environment, or terminal command.
 
+The SDK exports the canonical managed-tool request, result, frame, and JSON
+structure limits plus `extensionJsonUtf8ByteLength` for exact host-neutral
+checks. Diagnostics providers have high per-provider item and encoded-byte
+ceilings plus one document-wide aggregate budget; providers must bound their
+own results before crossing either RPC boundary.
+
 Long-running managed tools use the declarative `persistentServices` contribution and the
 `services.manage` permission. A service selects only a signed tool and entrypoint and declares
 bounded stop, health-probe, and log policy; it cannot declare argv, an environment, a path, or
@@ -162,14 +168,51 @@ project-relative identity, or `null` when the document is outside the open
 project. The isolated provider never receives a native path or direct filesystem
 access.
 
-Preview providers may select registered editor languages or declare strict
-project-relative `paths` globs. Path selectors route host-safe previews without
-claiming syntax or language support. Every provider declares one `input` mode.
+Preview providers may select registered editor languages or declare strict `paths`
+globs. Project files expose their project-relative path; external and untitled
+documents expose their canonical display name. Path selectors route previews without
+claiming syntax or language support. Every provider declares one `input` mode and
+one required `placement`: `adjacent` toggles in the editor area on phones and sits
+beside the editor on wider screens, while `replace-editor` owns the editor area for
+visual resources that have no useful source view. The host derives layout only from
+this declaration, never from a package id or filename. The required `encoding` is
+`utf8` for text documents or `base64` for binary source snapshots; `text` input
+always requires `utf8`. The same selected provider metadata controls the bounded
+file read and read-only editor policy.
 `text` receives the bounded canonical text snapshot and may return structured,
-table, text, design-token, or bounded inspector data. `document` receives metadata
-only and may select a declared HTML, SVG, or raster renderer for the exact source
-snapshot; it never receives bytes, resource URLs, markup, DOM, Vue, filesystem or
-native handles, or a WebView. HTML resources declare their script, console, and
-project-subresource policy explicitly. The host validates the bounded result,
+table, plain-text, or bounded HTML markup data. Markup declares `linked` or
+`independent` scrolling and is limited to inert semantic HTML: scripts, event handlers,
+active controls, remote resources, classes, ids, and extension styling are not part of
+the surface. The host sanitizes it and applies theme-aware semantic styling inside the
+preview pane. `document` receives metadata only and may select a declared HTML, SVG, or
+raster renderer for the exact source snapshot; it never receives bytes, resource URLs,
+markup, DOM, Vue, filesystem or native handles, or a WebView.
+HTML resources are always script-blocked and declare only whether canonical project
+subresources are available. The host validates the bounded result,
 mints and disposes the canonical resource session, confines project resources,
 and owns the renderer.
+Preview request and result budgets are exported as
+`EXTENSION_PREVIEW_MAX_INPUT_BYTES`, `EXTENSION_PREVIEW_MAX_BINARY_INPUT_BYTES`,
+and `EXTENSION_PREVIEW_MAX_RESULT_BYTES`.
+
+```json
+{
+  "contributes": {
+    "previewProviders": [{
+      "id": "preview",
+      "module": "providers/preview.js",
+      "export": "createPreview",
+      "input": "text",
+      "placement": "adjacent",
+      "encoding": "utf8",
+      "languages": [{
+        "id": "example",
+        "schemes": ["file", "untitled"],
+        "group": "example.preview",
+        "priority": 100,
+        "composition": "exclusive"
+      }]
+    }]
+  }
+}
+```

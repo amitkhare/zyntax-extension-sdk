@@ -1,8 +1,28 @@
-/** Catalog-owned service launch identity. Arguments and environments belong to the tool entrypoint. */
-export interface ExtensionPersistentServiceExecution {
+/** Catalog-owned managed-tool launch identity. */
+export interface ExtensionManagedToolServiceExecution {
+  readonly kind: "managedTool";
   readonly tool: string;
   readonly entrypoint: string;
 }
+
+/**
+ * Signed terminal-package launch identity.
+ *
+ * The package owns the executable descriptor. Extensions name only an owned development stack
+ * and symbolic entrypoint, so paths, commands, arguments, environments, and package-manager
+ * internals never enter the extension API.
+ */
+export interface ExtensionTerminalPackageServiceExecution {
+  readonly kind: "terminalPackage";
+  readonly stack: string;
+  /** Stack-local terminal-package requirement identity. */
+  readonly package: string;
+  readonly entrypoint: string;
+}
+
+export type ExtensionPersistentServiceExecution =
+  | ExtensionManagedToolServiceExecution
+  | ExtensionTerminalPackageServiceExecution;
 
 /** Host-supervised service shutdown policy. */
 export interface ExtensionPersistentServiceLifecycle {
@@ -26,10 +46,11 @@ export interface ExtensionPersistentServiceLog {
 }
 
 /**
- * A long-running managed-tool process owned by one exact extension activation.
+ * A long-running host-resolved process owned by one exact extension activation.
  *
  * Executable paths, environments, and provider-supplied argv are intentionally absent. The
- * native host resolves `execution` from the installed manifest and signed managed-tool catalog.
+ * native host resolves `execution` from the installed manifest and either the signed managed-tool
+ * catalog or a signed terminal-package entrypoint descriptor.
  */
 export interface ExtensionPersistentServiceContribution {
   readonly id: string;

@@ -1,5 +1,7 @@
 /** A package resolved only through a host-owned signed repository identity. */
 export interface ExtensionTerminalPackageRequirement {
+  /** Stack-local symbolic identity used by other declarative contributions. */
+  readonly id: string;
   readonly repository: string;
   readonly package: string;
 }
@@ -29,6 +31,7 @@ export interface ExtensionTerminalPackageStackInspection {
     | "repairRequired"
     | "unavailable";
   readonly packages: readonly {
+    readonly id: string;
     readonly repository: string;
     readonly package: string;
     readonly state: ExtensionTerminalPackageState;

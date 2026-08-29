@@ -47,6 +47,7 @@ import type {
 
 export * from "./contract.js";
 export * from "./managedToolProtocol.js";
+export * from "./runtimeLimits.js";
 export { EXTENSION_API_VERSION };
 
 export function throwIfCancellationRequested(

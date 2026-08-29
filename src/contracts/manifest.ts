@@ -231,6 +231,7 @@ export interface ExtensionLanguageServerMapping {
   id: string;
   languageId: string;
   priority: number;
+  composition: ExtensionCapabilityComposition;
   capabilities: ExtensionLanguageServerCapabilityMatrix;
 }
 
@@ -469,16 +470,39 @@ export interface ExtensionPreviewPathProviderMapping {
 /** Controls whether the isolated provider receives document text or metadata only. */
 export type ExtensionPreviewProviderInput = "text" | "document";
 
+/** Declares how the host composes the preview with the source editor. */
+export type ExtensionPreviewPlacement = "adjacent" | "replace-editor";
+
+/** Declares how the host reads the canonical source before opening the document. */
+export type ExtensionPreviewSourceEncoding = "utf8" | "base64";
+
 interface ExtensionPreviewProviderBaseContribution {
   id: string;
   module: string;
   export: string;
-  input: ExtensionPreviewProviderInput;
 }
+
+type ExtensionPreviewProviderSourceContribution =
+  | {
+      input: "text";
+      encoding: "utf8";
+      placement: ExtensionPreviewPlacement;
+    }
+  | {
+      input: "document";
+      encoding: "utf8";
+      placement: ExtensionPreviewPlacement;
+    }
+  | {
+      input: "document";
+      encoding: "base64";
+      placement: "replace-editor";
+    };
 
 /** A preview must declare at least one exclusive language or path selector. */
 export type ExtensionPreviewProviderContribution =
-  ExtensionPreviewProviderBaseContribution & (
+  ExtensionPreviewProviderBaseContribution &
+  ExtensionPreviewProviderSourceContribution & (
     | {
         languages: [
           ExtensionExclusiveDocumentProviderMapping,
@@ -633,6 +657,7 @@ export interface ExtensionTypeScriptCompanionContribution {
     dependency: string;
     languageServer: string;
   };
+  protocol: "vue-language-tools";
   typescriptSdk: ExtensionToolResourceReference;
   plugin: {
     name: string;
