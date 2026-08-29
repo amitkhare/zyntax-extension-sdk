@@ -119,6 +119,165 @@
       }
     },
     {
+      "id": "runtime-provider-valid",
+      "area": "runtime",
+      "valid": true,
+      "patch": {
+        "permissions": [
+          "terminal.packages"
+        ],
+        "contributes": {
+          "developmentStacks": [
+            {
+              "id": "python-runtime",
+              "label": "Python runtime",
+              "packages": [
+                {
+                  "id": "python",
+                  "repository": "termux-main",
+                  "package": "python"
+                }
+              ]
+            }
+          ],
+          "runtimeProviders": [
+            {
+              "id": "python",
+              "runtime": "python",
+              "label": "Python",
+              "capabilities": [
+                "process.execute"
+              ],
+              "source": {
+                "kind": "terminalPackage",
+                "stack": "python-runtime",
+                "package": "python",
+                "executable": "bin/python",
+                "versionProbe": {
+                  "arguments": [
+                    "--version"
+                  ],
+                  "stream": "stdout",
+                  "prefix": "Python "
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "runtime-provider-path-invalid",
+      "area": "runtime",
+      "valid": false,
+      "patch": {
+        "permissions": [
+          "terminal.packages"
+        ],
+        "contributes": {
+          "developmentStacks": [
+            {
+              "id": "python-runtime",
+              "label": "Python runtime",
+              "packages": [
+                {
+                  "id": "python",
+                  "repository": "termux-main",
+                  "package": "python"
+                }
+              ]
+            }
+          ],
+          "runtimeProviders": [
+            {
+              "id": "python",
+              "runtime": "python",
+              "label": "Python",
+              "capabilities": [
+                "process.execute"
+              ],
+              "source": {
+                "kind": "terminalPackage",
+                "stack": "python-runtime",
+                "package": "python",
+                "executable": "/bin/python",
+                "versionProbe": {
+                  "arguments": [
+                    "--version"
+                  ],
+                  "stream": "stdout",
+                  "prefix": "Python "
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "selected-runtime-requirement-valid",
+      "area": "runtime",
+      "valid": true,
+      "patch": {
+        "permissions": [
+          "extension.execute",
+          "runtimes.execute"
+        ],
+        "selectedRuntimeRequirements": [
+          {
+            "id": "python",
+            "runtime": "python",
+            "version": ">=3.12.0 <4.0.0",
+            "capabilities": [
+              "process.execute"
+            ]
+          }
+        ],
+        "activationEvents": [
+          {
+            "kind": "provider",
+            "providerKind": "task",
+            "provider": "python-tasks"
+          }
+        ],
+        "contributes": {
+          "taskProviders": [
+            {
+              "id": "python-tasks",
+              "module": "providers/tasks.js",
+              "export": "createTasks",
+              "schemes": [
+                "file"
+              ],
+              "group": "python.tasks",
+              "priority": 100,
+              "composition": "additive",
+              "taskTypes": [
+                "run"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "selected-runtime-permission-invalid",
+      "area": "runtime",
+      "valid": false,
+      "patch": {
+        "selectedRuntimeRequirements": [
+          {
+            "id": "python",
+            "runtime": "python",
+            "version": ">=3.12.0 <4.0.0",
+            "capabilities": [
+              "process.execute"
+            ]
+          }
+        ]
+      }
+    },
+    {
       "id": "activation-valid",
       "area": "activation",
       "valid": true,

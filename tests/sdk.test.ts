@@ -56,6 +56,7 @@ import {
   type ExtensionAssistedEditProviderContribution,
   type ExtensionHostCapabilityMap,
   type ExtensionHostApi,
+  type ExtensionHostPermission,
   type ExtensionHoverProvider,
   type ExtensionHtmlPreviewPolicy,
   type ExtensionHostTerminalProfileDescriptor,
@@ -63,6 +64,7 @@ import {
   type ExtensionTerminalPackageTransactionReceipt,
   type ExtensionJsonValue,
   type ExtensionLanguageServerCapabilityMatrix,
+  type ExtensionManifest,
   type ExtensionNetworkRequest,
   type ExtensionNotebookExecutionRequest,
   type ExtensionNotebookKernelEvent,
@@ -73,6 +75,11 @@ import {
   type ExtensionPreviewRequest,
   type ExtensionProjectTemplatePlan,
   type ExtensionProviderActivationContext,
+  type ExtensionRuntimeProviderContribution,
+  type ExtensionRuntimeSelection,
+  type ExtensionSelectedRuntimeRequirement,
+  type ExtensionSelectedRuntimeTaskExecution,
+  type ExtensionTaskExecution,
   type ExtensionTextMateGrammarContribution,
   type ExtensionWorkspaceFile,
   type ExtensionWorkspaceFileQuery,
@@ -153,7 +160,9 @@ describe("public extension SDK", () => {
     expect(EXTENSION_EXECUTION_MAX_ARGUMENTS).toBe(32);
     expect(EXTENSION_EXECUTION_MAX_ARGUMENT_LENGTH).toBe(512);
     expect(EXTENSION_PERMISSIONS).toContain("terminal.packages");
+    expect(EXTENSION_PERMISSIONS).toContain("runtimes.execute");
     expect(EXTENSION_CONTRIBUTION_FIELDS).toContain("developmentStacks");
+    expect(EXTENSION_CONTRIBUTION_FIELDS).toContain("runtimeProviders");
     expect(EXTENSION_TERMINAL_PACKAGE_REPOSITORIES).toEqual([
       "zyntax",
       "termux-main",
@@ -224,6 +233,41 @@ describe("public extension SDK", () => {
       | Readonly<{ kind: "value"; value: string }>
       | Readonly<{ kind: "cancelled" }>
     >();
+    expectTypeOf<ExtensionManifest["selectedRuntimeRequirements"]>()
+      .toEqualTypeOf<ExtensionSelectedRuntimeRequirement[] | undefined>();
+    expectTypeOf<ExtensionRuntimeProviderContribution["source"]>()
+      .toMatchTypeOf<{
+        readonly kind: "terminalPackage";
+        readonly stack: string;
+        readonly package: string;
+        readonly executable: string;
+        readonly versionProbe: {
+          readonly arguments: readonly string[];
+          readonly stream: "stdout" | "stderr";
+          readonly prefix: string;
+        };
+      }>();
+    expectTypeOf<Extract<
+      ExtensionTaskExecution,
+      { readonly kind: "selectedRuntime" }
+    >>().toEqualTypeOf<ExtensionSelectedRuntimeTaskExecution>();
+    expectTypeOf<ExtensionSelectedRuntimeTaskExecution>().toMatchTypeOf<{
+      readonly kind: "selectedRuntime";
+      readonly requirement: string;
+      readonly arguments: readonly string[];
+      readonly workingDirectory: readonly string[];
+    }>();
+    expectTypeOf<
+      "runtimes.execute" extends ExtensionHostPermission ? true : false
+    >().toEqualTypeOf<false>();
+    expectTypeOf<Extract<
+      ExtensionRuntimeSelection,
+      { readonly state: "ready" }
+    >["runtime"]["identity"]>().toEqualTypeOf<{
+      readonly providerId: string;
+      readonly runtimeId: string;
+      readonly fingerprint: string;
+    }>();
     expectTypeOf<Extract<
       ExtensionNotebookKernelEvent,
       { readonly kind: "output" }

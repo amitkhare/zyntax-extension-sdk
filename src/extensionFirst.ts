@@ -15,6 +15,7 @@ import type {
   ExtensionJsonObject,
   ExtensionJsonValue,
 } from "./contracts/json.js";
+import type { ExtensionSelectedRuntimeExecutionBase } from "./contracts/runtimes.js";
 
 export type ExtensionInlineCompletionTrigger =
   | { readonly kind: "automatic" }
@@ -429,9 +430,16 @@ export interface ExtensionManagedToolTaskExecution {
   readonly workingDirectory: readonly string[];
 }
 
+/** A task executed by the runtime explicitly selected for the active project. */
+export interface ExtensionSelectedRuntimeTaskExecution
+  extends ExtensionSelectedRuntimeExecutionBase {
+  readonly workingDirectory: readonly string[];
+}
+
 export type ExtensionTaskExecution =
   | ExtensionTerminalTaskExecution
-  | ExtensionManagedToolTaskExecution;
+  | ExtensionManagedToolTaskExecution
+  | ExtensionSelectedRuntimeTaskExecution;
 
 export interface ExtensionTaskDescriptor {
   readonly id: string;

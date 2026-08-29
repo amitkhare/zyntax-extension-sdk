@@ -9,6 +9,10 @@ import type {
 import type { WorkbenchContribution } from "./workbench.js";
 import type { ExtensionPersistentServiceContribution } from "./persistentServices.js";
 import type { ExtensionDevelopmentStackContribution } from "./terminalPackages.js";
+import type {
+  ExtensionRuntimeProviderContribution,
+  ExtensionSelectedRuntimeRequirement,
+} from "./runtimes.js";
 import {
   EXTENSION_ACTIVATION_PROVIDER_KINDS,
   EXTENSION_CONTRIBUTION_FIELDS,
@@ -36,6 +40,7 @@ export type { ExtensionJsonObject, ExtensionJsonValue } from "./json.js";
 export type * from "./workbench.js";
 export type * from "./persistentServices.js";
 export type * from "./terminalPackages.js";
+export type * from "./runtimes.js";
 
 export const EXTENSION_API_VERSION = 1 as const;
 
@@ -704,12 +709,14 @@ export interface ExtensionManifest {
   permissions: ExtensionPermission[];
   dependencies: ExtensionDependency[];
   toolRequirements: ManagedToolRequirement[];
+  selectedRuntimeRequirements?: ExtensionSelectedRuntimeRequirement[];
   contributes: {
     languages?: ExtensionLanguageContribution[];
     grammars?: ExtensionTextMateGrammarContribution[];
     languageServers?: ExtensionLanguageServerContribution[];
     persistentServices?: ExtensionPersistentServiceContribution[];
     developmentStacks?: ExtensionDevelopmentStackContribution[];
+    runtimeProviders?: ExtensionRuntimeProviderContribution[];
     formatters?: ExtensionDocumentFormatterContribution[];
     rangeFormatters?: ExtensionRangeFormatterContribution[];
     documentFormattingProviders?: ExtensionDocumentFormattingProviderContribution[];

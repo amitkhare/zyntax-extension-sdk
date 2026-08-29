@@ -55,6 +55,7 @@ export type * from "./agent/protocol.js";
 export type * from "./extensionFirst.js";
 export type * from "./contracts/persistentServices.js";
 export type * from "./contracts/terminalPackages.js";
+export type * from "./contracts/runtimes.js";
 export * from "./notebookKernelProtocol.js";
 
 export interface ExtensionDisposable {
@@ -1036,7 +1037,7 @@ export interface ExtensionHostCapabilityMap {
 
 export type ExtensionHostPermission = Exclude<
   ExtensionPermission,
-  "extension.execute"
+  "extension.execute" | "runtimes.execute"
 >;
 
 export type ExtensionHostApi<TPermission extends ExtensionHostPermission> = Readonly<{
