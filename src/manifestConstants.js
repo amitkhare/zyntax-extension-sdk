@@ -154,7 +154,6 @@ export const EXTENSION_CONTRIBUTION_FIELDS = Object.freeze([
   "languageServers",
   "persistentServices",
   "developmentStacks",
-  "runtimeProviders",
   "formatters",
   "rangeFormatters",
   "documentFormattingProviders",

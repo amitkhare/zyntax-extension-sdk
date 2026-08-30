@@ -9,10 +9,7 @@ import type {
 import type { WorkbenchContribution } from "./workbench.js";
 import type { ExtensionPersistentServiceContribution } from "./persistentServices.js";
 import type { ExtensionDevelopmentStackContribution } from "./terminalPackages.js";
-import type {
-  ExtensionRuntimeProviderContribution,
-  ExtensionRuntimeRequirement,
-} from "./runtimes.js";
+import type { ExtensionRuntimeRequirement } from "./runtimes.js";
 import {
   EXTENSION_ACTIVATION_PROVIDER_KINDS,
   EXTENSION_CONTRIBUTION_FIELDS,
@@ -722,7 +719,6 @@ export interface ExtensionManifest {
     languageServers?: ExtensionLanguageServerContribution[];
     persistentServices?: ExtensionPersistentServiceContribution[];
     developmentStacks?: ExtensionDevelopmentStackContribution[];
-    runtimeProviders?: ExtensionRuntimeProviderContribution[];
     formatters?: ExtensionDocumentFormatterContribution[];
     rangeFormatters?: ExtensionRangeFormatterContribution[];
     documentFormattingProviders?: ExtensionDocumentFormattingProviderContribution[];

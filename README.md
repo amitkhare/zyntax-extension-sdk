@@ -97,31 +97,10 @@ providers:
 }
 ```
 
-Runtime providers are declarative `contributes.runtimeProviders` entries. A
-terminal-package provider maps symbolic command ids to normalized,
-prefix-relative package-owned executables and probes its version through one of
-those ids. A command id is stable across providers for the same runtime family
-and is also the command name activated in host-owned shells. A managed provider
-references one signed tool which explicitly
-supports general development execution. Neither source can declare a native
-path, environment, shell fragment, or fallback command.
-
-```json
-{
-  "id": "python",
-  "runtime": "python",
-  "label": "Python",
-  "capabilities": ["process.execute"],
-  "source": { "kind": "terminalPackage", "providerId": "python" },
-  "commands": [{ "id": "python", "executable": "bin/python" }],
-  "versionProbe": {
-    "command": "python",
-    "args": ["--version"],
-    "stream": "stdout",
-    "prefix": "Python "
-  }
-}
-```
+Runtime discovery and registration are host-owned. Extensions consume the
+globally selected compatible runtime through requirements and symbolic commands;
+they cannot add runtime candidates, probes, executable locations, environments,
+shell fragments, or fallback commands.
 
 A runtime task references its manifest-local requirement and a provider-neutral
 command id. Its required console mode chooses an interactive PTY or captured

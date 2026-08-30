@@ -56,25 +56,6 @@ export function isExtensionRuntimeCommandConfigurationReference(
     && isExtensionRuntimeCommandReference(tagged.$runtimeCommand);
 }
 
-/**
- * One stable command exposed by a terminal-package runtime provider.
- * The same id is used by runtime consumers and as the active host-shell command name.
- */
-export interface ExtensionTerminalPackageRuntimeCommand {
-  readonly id: string;
-  /** Normalized prefix-relative regular file owned by the terminal package. */
-  readonly executable: string;
-}
-
-/** A bounded version probe using one command declared by the same provider. */
-export interface ExtensionRuntimeVersionProbe {
-  readonly command: string;
-  readonly args: readonly string[];
-  readonly stream: "stdout" | "stderr";
-  /** Exact text before the first semantic-version token in the selected stream. */
-  readonly prefix: string;
-}
-
 /** A runtime installed through the terminal package system. */
 export interface ExtensionTerminalPackageRuntimeSource {
   readonly kind: "terminalPackage";
@@ -91,31 +72,6 @@ export interface ExtensionManagedToolRuntimeSource {
 export type ExtensionRuntimeSource =
   | ExtensionTerminalPackageRuntimeSource
   | ExtensionManagedToolRuntimeSource;
-
-interface ExtensionRuntimeProviderContributionBase {
-  readonly id: string;
-  readonly runtime: string;
-  readonly label: string;
-  readonly capabilities: readonly string[];
-}
-
-/** Declarative discovery of one user-installed terminal-package runtime. */
-export interface ExtensionTerminalPackageRuntimeProviderContribution
-  extends ExtensionRuntimeProviderContributionBase {
-  readonly source: ExtensionTerminalPackageRuntimeSource;
-  readonly commands: readonly ExtensionTerminalPackageRuntimeCommand[];
-  readonly versionProbe: ExtensionRuntimeVersionProbe;
-}
-
-/** Declarative discovery of one app-managed development runtime. */
-export interface ExtensionManagedToolRuntimeProviderContribution
-  extends ExtensionRuntimeProviderContributionBase {
-  readonly source: ExtensionManagedToolRuntimeSource;
-}
-
-export type ExtensionRuntimeProviderContribution =
-  | ExtensionTerminalPackageRuntimeProviderContribution
-  | ExtensionManagedToolRuntimeProviderContribution;
 
 /** Opaque identity of one exact runtime observation. No native path is exposed. */
 export interface ExtensionRuntimeIdentity {

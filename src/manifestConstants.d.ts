@@ -126,7 +126,6 @@ export declare const EXTENSION_CONTRIBUTION_FIELDS: readonly [
   "languageServers",
   "persistentServices",
   "developmentStacks",
-  "runtimeProviders",
   "formatters",
   "rangeFormatters",
   "documentFormattingProviders",

@@ -83,15 +83,12 @@ import {
   type ExtensionProjectTemplatePlan,
   type ExtensionProviderActivationContext,
   type ExtensionManagedToolTaskExecution,
-  type ExtensionManagedToolRuntimeProviderContribution,
   type ExtensionRuntimeDescriptor,
   type ExtensionRuntimeCommandConfigurationReference,
   type ExtensionRuntimeCommandReference,
-  type ExtensionRuntimeProviderContribution,
   type ExtensionRuntimeRequirement,
   type ExtensionRuntimeSelection,
   type ExtensionRuntimeTaskExecution,
-  type ExtensionTerminalPackageRuntimeProviderContribution,
   type ExtensionToolResourceReference,
   type ExtensionTaskExecution,
   type ExtensionTextMateGrammarContribution,
@@ -176,7 +173,6 @@ describe("public extension SDK", () => {
     expect(EXTENSION_PERMISSIONS).toContain("terminal.packages");
     expect(EXTENSION_PERMISSIONS).toContain("runtimes.execute");
     expect(EXTENSION_CONTRIBUTION_FIELDS).toContain("developmentStacks");
-    expect(EXTENSION_CONTRIBUTION_FIELDS).toContain("runtimeProviders");
     expect(EXTENSION_RUNTIME_SOURCE_KINDS).toEqual([
       "terminalPackage",
       "managedTool",
@@ -302,29 +298,6 @@ describe("public extension SDK", () => {
       readonly requirement: string;
       readonly command: string;
     }>();
-    expectTypeOf<ExtensionRuntimeProviderContribution["source"]>()
-      .toEqualTypeOf<
-        | { readonly kind: "terminalPackage"; readonly providerId: string }
-        | { readonly kind: "managedTool"; readonly toolId: string }
-      >();
-    expectTypeOf<ExtensionTerminalPackageRuntimeProviderContribution>()
-      .toMatchTypeOf<{
-        readonly commands: readonly {
-          readonly id: string;
-          readonly executable: string;
-        }[];
-        readonly versionProbe: {
-          readonly command: string;
-          readonly args: readonly string[];
-          readonly stream: "stdout" | "stderr";
-          readonly prefix: string;
-        };
-      }>();
-    expectTypeOf<ExtensionManagedToolRuntimeProviderContribution["source"]>()
-      .toEqualTypeOf<{
-        readonly kind: "managedTool";
-        readonly toolId: string;
-      }>();
     expectTypeOf<
       "source" extends keyof ExtensionRuntimeDescriptor ? true : false
     >().toEqualTypeOf<false>();
