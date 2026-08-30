@@ -92,25 +92,55 @@ const descriptor = {
 
 Runtime Manager is the device-wide authority for development runtimes. The user
 selects one provider globally for each stable family such as `python`, `node`,
-`java`, or `rust`. Extensions declare only a minimum version and required
-capabilities; they do not select, pin, cap, discover, or silently replace the
-active provider. The host never searches terminal `PATH`.
+`java`, or `rust`. Each extension runtime requirement explicitly supports the
+selected runtime, one exact extension-managed runtime, or both. Extensions do
+not inspect or mutate the global selection, and the host never searches terminal
+`PATH`.
 
 A consumer declares `runtimeRequirements`. The `runtimes.execute` permission
 authorizes runtime execution but exposes no selection or process API to isolated
-providers:
+providers. The three exact source forms are:
+
+- `{ "selected": true }` uses only a compatible Runtime Manager selection.
+- `{ "managed": { "tool": "publisher.runtime-tool" } }` uses only that exact
+  owned managed-tool dependency.
+- `{ "selected": true, "managed": { "tool": "publisher.runtime-tool" } }`
+  uses a compatible selection first and the managed runtime when no usable
+  selection is available.
+
+The declared fallback does not change the global selection. A missing, changed,
+incompatible, or failed selection remains diagnosable even when managed
+execution can continue.
 
 ```json
 {
-  "permissions": ["extension.execute", "runtimes.execute"],
+  "permissions": ["runtimes.execute"],
+  "toolRequirements": [{
+    "id": "zyntax.python-runtime",
+    "version": ">=3.14.6 <4",
+    "platforms": [{ "os": "android", "architecture": "arm64-v8a" }],
+    "capabilities": ["runtime.python"]
+  }],
   "runtimeRequirements": [{
     "id": "python",
     "runtime": "python",
     "minimumVersion": "3.12.0",
-    "capabilities": ["process.execute"]
+    "capabilities": ["process.execute"],
+    "sources": {
+      "selected": true,
+      "managed": { "tool": "zyntax.python-runtime" }
+    }
   }]
 }
 ```
+
+The managed `tool` must name an entry in the same manifest's
+`toolRequirements`. Its signed release must be a runtime tool whose
+`projectRuntime` family, version, and capabilities satisfy the requirement.
+Runtime executions continue to declare only `{ requirement, command }`; for a
+managed runtime, the host resolves that command through the signed
+`projectRuntime.commands` mapping. Extensions never duplicate its entrypoint,
+runtime root, executable path, or environment.
 
 Runtime inventory, verification, selection, and execution are host-owned. A
 declarative `contributes.runtimeProviders` entry may describe how a signed
@@ -155,10 +185,9 @@ their sorted, unique capabilities appear only while that package owns the
 declared file. The version probe must use a primary-owned command, so a missing
 companion never removes the runtime itself. Managed `.ztool` runtimes instead
 declare the runtime they actually contain; they do not act as package-provider
-registries.
-Extensions consume the globally selected compatible runtime through requirements
-and symbolic commands; no provider can declare a native path, environment,
-shell fragment, or fallback command.
+registries. Selected and managed runtimes share the same provider-neutral
+symbolic commands; no provider can declare a native path, environment, shell
+fragment, or inferred fallback command.
 
 A runtime task references its manifest-local requirement and a provider-neutral
 command id. Its required console mode chooses an interactive PTY or captured

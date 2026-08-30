@@ -1,3 +1,31 @@
+/** Exact managed-tool dependency used as an extension-owned runtime. */
+export interface ExtensionManagedRuntimeBinding {
+  /** Must name one exact entry in the owning manifest's `toolRequirements`. */
+  readonly tool: string;
+}
+
+/**
+ * Runtime sources supported by one requirement.
+ *
+ * When both sources are declared, the host uses a compatible Runtime Manager
+ * selection first and the exact managed-tool binding otherwise. The managed
+ * command remains the symbolic command declared by each runtime execution and
+ * is resolved through the signed tool's `projectRuntime` command map.
+ */
+export type ExtensionRuntimeRequirementSources =
+  | {
+      readonly selected: true;
+      readonly managed?: never;
+    }
+  | {
+      readonly selected?: never;
+      readonly managed: ExtensionManagedRuntimeBinding;
+    }
+  | {
+      readonly selected: true;
+      readonly managed: ExtensionManagedRuntimeBinding;
+    };
+
 /** One development-runtime capability required by an extension. */
 export interface ExtensionRuntimeRequirement {
   /** Manifest-local identity referenced by runtime execution plans. */
@@ -7,6 +35,40 @@ export interface ExtensionRuntimeRequirement {
   /** Inclusive semantic-version floor. Extensions do not pin or cap the selected version. */
   readonly minimumVersion: string;
   readonly capabilities: readonly string[];
+  /** Exact supported sources; no source or executable is inferred from `PATH`. */
+  readonly sources: ExtensionRuntimeRequirementSources;
+}
+
+const MANAGED_RUNTIME_TOOL_ID =
+  /^[a-z0-9][a-z0-9-]{0,62}\.[a-z0-9][a-z0-9-]{0,62}$/u;
+
+function isExtensionManagedRuntimeBinding(
+  value: unknown,
+): value is ExtensionManagedRuntimeBinding {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const binding = value as Record<string, unknown>;
+  const fields = Object.keys(binding);
+  return fields.length === 1
+    && fields[0] === "tool"
+    && typeof binding.tool === "string"
+    && MANAGED_RUNTIME_TOOL_ID.test(binding.tool);
+}
+
+/** Strict structural validation for a runtime requirement's source declaration. */
+export function isExtensionRuntimeRequirementSources(
+  value: unknown,
+): value is ExtensionRuntimeRequirementSources {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const sources = value as Record<string, unknown>;
+  const fields = Object.keys(sources).sort();
+  if (fields.length === 0 || fields.length > 2) return false;
+  if (fields.some((field) => field !== "managed" && field !== "selected")) {
+    return false;
+  }
+  const hasSelected = Object.prototype.hasOwnProperty.call(sources, "selected");
+  const hasManaged = Object.prototype.hasOwnProperty.call(sources, "managed");
+  return (!hasSelected || sources.selected === true)
+    && (!hasManaged || isExtensionManagedRuntimeBinding(sources.managed));
 }
 
 /** One terminal-package command exposed by a declarative runtime provider. */

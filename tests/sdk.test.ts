@@ -56,6 +56,7 @@ import {
   isExtensionExecutionArgument,
   isExtensionRuntimeCommandConfigurationReference,
   isExtensionRuntimeCommandReference,
+  isExtensionRuntimeRequirementSources,
   throwIfCancellationRequested,
   type ExtensionCompletionProvider,
   type ExtensionAssistedEditProviderContribution,
@@ -88,6 +89,7 @@ import {
   type ExtensionRuntimeCommandReference,
   type ExtensionRuntimeProviderContribution,
   type ExtensionRuntimeRequirement,
+  type ExtensionRuntimeRequirementSources,
   type ExtensionRuntimeSelection,
   type ExtensionRuntimeTaskExecution,
   type ExtensionToolResourceReference,
@@ -126,6 +128,28 @@ describe("public extension SDK", () => {
     expect(() => debugProjectPath("program", "", "file")).toThrow(
       "non-empty trimmed string",
     );
+  });
+
+  it("validates exact runtime requirement source declarations", () => {
+    expect(isExtensionRuntimeRequirementSources({ selected: true })).toBe(true);
+    expect(isExtensionRuntimeRequirementSources({
+      managed: { tool: "zyntax.python-runtime" },
+    })).toBe(true);
+    expect(isExtensionRuntimeRequirementSources({
+      selected: true,
+      managed: { tool: "zyntax.python-runtime" },
+    })).toBe(true);
+
+    expect(isExtensionRuntimeRequirementSources(undefined)).toBe(false);
+    expect(isExtensionRuntimeRequirementSources({})).toBe(false);
+    expect(isExtensionRuntimeRequirementSources({ automatic: true })).toBe(false);
+    expect(isExtensionRuntimeRequirementSources({ selected: false })).toBe(false);
+    expect(isExtensionRuntimeRequirementSources({
+      managed: { tool: "zyntax.python-runtime", command: "python" },
+    })).toBe(false);
+    expect(isExtensionRuntimeRequirementSources({
+      managed: { tool: "/data/data/com.termux/files/usr/bin/python" },
+    })).toBe(false);
   });
 
   it("exports the canonical API and provider method contract", () => {
@@ -297,6 +321,7 @@ describe("public extension SDK", () => {
       readonly runtime: string;
       readonly minimumVersion: string;
       readonly capabilities: readonly string[];
+      readonly sources: ExtensionRuntimeRequirementSources;
     }>();
     expectTypeOf<ExtensionRuntimeProviderContribution>().toEqualTypeOf<{
       readonly id: string;

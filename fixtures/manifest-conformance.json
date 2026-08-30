@@ -27,6 +27,61 @@
   },
   "storeTools": [
     {
+      "id": "zyntax.contract-runtime",
+      "name": "Contract Runtime",
+      "kind": "runtime",
+      "version": "1.0.0",
+      "platform": {
+        "os": "android",
+        "architecture": "arm64-v8a"
+      },
+      "capabilities": [
+        "runtime.contract"
+      ],
+      "dependencies": [],
+      "runtimeRoot": "payload/runtime",
+      "source": {
+        "kind": "store"
+      },
+      "size": 128,
+      "sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+      "contentSize": 1024,
+      "scratchSize": 0,
+      "license": "MIT",
+      "entrypoints": [
+        {
+          "id": "runtime",
+          "path": "payload/runtime/bin/contract-runtime"
+        }
+      ],
+      "projectRuntime": {
+        "runtime": "contract-runtime",
+        "version": "1.0.0",
+        "capabilities": [
+          "process.execute"
+        ],
+        "commands": [
+          {
+            "id": "runtime",
+            "entrypoint": "runtime"
+          }
+        ]
+      },
+      "resources": [],
+      "probes": [
+        {
+          "capability": "runtime.contract",
+          "entrypoint": "runtime",
+          "args": [
+            "--version"
+          ],
+          "timeoutMs": 1000,
+          "maxOutputBytes": 4096,
+          "expectedStdout": "1.0.0\n"
+        }
+      ]
+    },
+    {
       "id": "zyntax.contract-tool",
       "name": "Contract Language Server",
       "kind": "languageServer",
@@ -330,7 +385,7 @@
       }
     },
     {
-      "id": "runtime-requirement-valid",
+      "id": "runtime-requirement-selected-valid",
       "area": "runtime",
       "valid": true,
       "patch": {
@@ -345,7 +400,10 @@
             "minimumVersion": "3.12.0",
             "capabilities": [
               "process.execute"
-            ]
+            ],
+            "sources": {
+              "selected": true
+            }
           }
         ],
         "activationEvents": [
@@ -376,6 +434,176 @@
       }
     },
     {
+      "id": "runtime-requirement-managed-valid",
+      "area": "runtime",
+      "valid": true,
+      "patch": {
+        "permissions": [
+          "runtimes.execute"
+        ],
+        "toolRequirements": [
+          {
+            "id": "zyntax.contract-runtime",
+            "version": "1.0.0",
+            "platforms": [
+              {
+                "os": "android",
+                "architecture": "arm64-v8a"
+              }
+            ],
+            "capabilities": [
+              "runtime.contract"
+            ]
+          }
+        ],
+        "runtimeRequirements": [
+          {
+            "id": "contract-runtime",
+            "runtime": "contract-runtime",
+            "minimumVersion": "1.0.0",
+            "capabilities": [
+              "process.execute"
+            ],
+            "sources": {
+              "managed": {
+                "tool": "zyntax.contract-runtime"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "runtime-requirement-selected-managed-valid",
+      "area": "runtime",
+      "valid": true,
+      "patch": {
+        "permissions": [
+          "runtimes.execute"
+        ],
+        "toolRequirements": [
+          {
+            "id": "zyntax.contract-runtime",
+            "version": "1.0.0",
+            "platforms": [
+              {
+                "os": "android",
+                "architecture": "arm64-v8a"
+              }
+            ],
+            "capabilities": [
+              "runtime.contract"
+            ]
+          }
+        ],
+        "runtimeRequirements": [
+          {
+            "id": "contract-runtime",
+            "runtime": "contract-runtime",
+            "minimumVersion": "1.0.0",
+            "capabilities": [
+              "process.execute"
+            ],
+            "sources": {
+              "selected": true,
+              "managed": {
+                "tool": "zyntax.contract-runtime"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "runtime-requirement-sources-missing-invalid",
+      "area": "runtime",
+      "valid": false,
+      "patch": {
+        "permissions": [
+          "runtimes.execute"
+        ],
+        "runtimeRequirements": [
+          {
+            "id": "python",
+            "runtime": "python",
+            "minimumVersion": "3.12.0",
+            "capabilities": [
+              "process.execute"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "runtime-requirement-sources-empty-invalid",
+      "area": "runtime",
+      "valid": false,
+      "patch": {
+        "permissions": [
+          "runtimes.execute"
+        ],
+        "runtimeRequirements": [
+          {
+            "id": "python",
+            "runtime": "python",
+            "minimumVersion": "3.12.0",
+            "capabilities": [
+              "process.execute"
+            ],
+            "sources": {}
+          }
+        ]
+      }
+    },
+    {
+      "id": "runtime-requirement-sources-unknown-invalid",
+      "area": "runtime",
+      "valid": false,
+      "patch": {
+        "permissions": [
+          "runtimes.execute"
+        ],
+        "runtimeRequirements": [
+          {
+            "id": "python",
+            "runtime": "python",
+            "minimumVersion": "3.12.0",
+            "capabilities": [
+              "process.execute"
+            ],
+            "sources": {
+              "automatic": true
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "runtime-requirement-managed-tool-unknown-invalid",
+      "area": "runtime",
+      "valid": false,
+      "patch": {
+        "permissions": [
+          "runtimes.execute"
+        ],
+        "runtimeRequirements": [
+          {
+            "id": "contract-runtime",
+            "runtime": "contract-runtime",
+            "minimumVersion": "1.0.0",
+            "capabilities": [
+              "process.execute"
+            ],
+            "sources": {
+              "managed": {
+                "tool": "zyntax.missing-runtime"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
       "id": "runtime-permission-invalid",
       "area": "runtime",
       "valid": false,
@@ -387,7 +615,10 @@
             "minimumVersion": "3.12.0",
             "capabilities": [
               "process.execute"
-            ]
+            ],
+            "sources": {
+              "selected": true
+            }
           }
         ]
       }
@@ -408,7 +639,10 @@
             "minimumVersion": "1.0.0",
             "capabilities": [
               "process.execute"
-            ]
+            ],
+            "sources": {
+              "selected": true
+            }
           }
         ],
         "activationEvents": [
@@ -452,7 +686,10 @@
             "minimumVersion": ">=3.12.0 <4.0.0",
             "capabilities": [
               "process.execute"
-            ]
+            ],
+            "sources": {
+              "selected": true
+            }
           }
         ]
       }
