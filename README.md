@@ -52,56 +52,74 @@ Kernel adapters remain runtime-neutral. They must not expose native paths,
 process handles, transport sockets, or renderer objects, and the host never
 infers a runtime from a notebook language or file name.
 
-## Managed and selected runtimes
+## Runtime Manager
 
-Managed tools and user-selected runtimes are separate, explicit execution
-routes. Managed tools remain immutable signed packages. A selected runtime is a
-user-installed executable chosen by the user as a device default or project
-override. The host never switches between the routes or searches terminal
-`PATH` when a declared runtime is missing.
+Runtime Manager is the device-wide authority for development runtimes. The user
+selects one provider globally for each stable family such as `python`, `node`,
+`java`, or `rust`. Extensions declare only a minimum version and required
+capabilities; they do not select, pin, cap, discover, or silently replace the
+active provider. The host never searches terminal `PATH`.
 
-A selected-runtime consumer declares `selectedRuntimeRequirements`, naming a
-canonical runtime family, a strict conjunctive semantic-version range, and its
-required capabilities. Managed-only extensions omit this field and remain on
-their existing route unchanged. The `runtimes.execute` permission authorizes
-the selected route but exposes no provider host API: discovery, selection,
-executable resolution, process ownership, and failure reporting remain
-host-owned.
-
-Runtime providers are declarative `contributes.runtimeProviders` entries. A
-terminal-package provider references a package requirement in the same
-manifest, one normalized package-owned file beneath the terminal prefix, and a
-bounded version probe. It cannot declare an absolute path, environment, shell
-text, or fallback command.
+A consumer declares `runtimeRequirements`. The `runtimes.execute` permission
+authorizes runtime execution but exposes no selection or process API to isolated
+providers:
 
 ```json
 {
   "permissions": ["extension.execute", "runtimes.execute"],
-  "selectedRuntimeRequirements": [{
+  "runtimeRequirements": [{
     "id": "python",
     "runtime": "python",
-    "version": ">=3.12.0 <4.0.0",
+    "minimumVersion": "3.12.0",
     "capabilities": ["process.execute"]
   }]
 }
 ```
 
-A selected-runtime task references only that manifest-local requirement:
+Runtime providers are declarative `contributes.runtimeProviders` entries. A
+terminal-package provider maps symbolic command ids to normalized,
+prefix-relative package-owned executables and probes its version through one of
+those ids. A managed provider references one signed tool which explicitly
+supports general development execution. Neither source can declare a native
+path, environment, shell fragment, or fallback command.
+
+```json
+{
+  "id": "python",
+  "runtime": "python",
+  "label": "Python",
+  "capabilities": ["process.execute"],
+  "source": { "kind": "terminalPackage", "providerId": "python" },
+  "commands": [{ "id": "python", "executable": "bin/python" }],
+  "versionProbe": {
+    "command": "python",
+    "args": ["--version"],
+    "stream": "stdout",
+    "prefix": "Python "
+  }
+}
+```
+
+A runtime task references its manifest-local requirement and a provider-neutral
+command id. Its required console mode chooses an interactive PTY or captured
+output without changing runtime resolution:
 
 ```ts
 const execution = {
-  kind: "selectedRuntime" as const,
+  kind: "runtime" as const,
   requirement: "python",
-  arguments: ["main.py"],
+  command: "python",
+  args: ["main.py"],
   workingDirectory: [],
+  console: "terminal" as const,
 };
 ```
 
-Public runtime identities contain only a host-qualified provider id, stable
-candidate id, and exact observation fingerprint. Native locations never cross
-the extension boundary. If the executable or owning package changes, the
-fingerprint changes and the previous selection becomes explicitly unavailable
-until the user selects it again.
+Public runtime identities contain only an opaque installed-source identity,
+stable candidate id, and exact observation fingerprint. Native locations never cross
+the extension boundary. If an installation changes, its fingerprint changes
+and the global selection becomes explicitly unavailable until the user selects
+the current candidate.
 
 Language-server mappings declare only verified routes. Position routes are
 `completion`, `hover`, `signatureHelp`, `definition`, `implementation`,
@@ -125,13 +143,12 @@ Extension builds never execute TypeScript source directly from `node_modules`.
 The SDK also defines bounded plain-data contracts for inline completions,
 assisted edits, AI code actions, decorations, document colors, hover, tasks, terminal
 profiles, SCM state, and project templates. A task provider returns one reviewed
-execution plan. A `terminal` plan contains only a command name, literal argument
-array, and project-relative working-directory segments and requires the explicit
-`terminal` permission. A `managedTool` plan contains only an exact manifest-declared
-tool and entrypoint, bounded literal arguments, and project-relative working-directory
-segments and requires `tools.execute`. A `selectedRuntime` plan references one declared
-selected-runtime requirement, the same bounded arguments, and project-relative
-working-directory segments and requires `runtimes.execute`. The host resolves every
+execution plan. A `managedTool` plan contains only an exact manifest-declared
+tool and entrypoint, bounded literal arguments, project-relative working-directory
+segments, and a required console mode, and requires `tools.execute`. A `runtime`
+plan references one declared runtime requirement, a symbolic command, bounded
+arguments, project-relative working-directory segments, and a required console
+mode, and requires `runtimes.execute`. The host resolves every
 plan only after approval, owns its lifetime and cancellation, and never exposes a
 native path, environment, shell fragment, or process handle to the provider. Terminal-profile
 and project-template providers likewise return descriptors or host-reviewed plans

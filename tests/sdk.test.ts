@@ -38,6 +38,9 @@ import {
   EXTENSION_PREVIEW_MAX_INPUT_BYTES,
   EXTENSION_PREVIEW_MAX_BINARY_INPUT_BYTES,
   EXTENSION_PREVIEW_MAX_RESULT_BYTES,
+  EXTENSION_RUNTIME_SOURCE_KINDS,
+  EXTENSION_TASK_CONSOLES,
+  EXTENSION_TASK_EXECUTION_KINDS,
   EXTENSION_TASK_PROVIDER_MAX_ITEMS,
   EXTENSION_TERMINAL_PACKAGE_MAX_REQUEST_BYTES,
   EXTENSION_TERMINAL_PACKAGE_MAX_RESULT_BYTES,
@@ -75,10 +78,14 @@ import {
   type ExtensionPreviewRequest,
   type ExtensionProjectTemplatePlan,
   type ExtensionProviderActivationContext,
+  type ExtensionManagedToolTaskExecution,
+  type ExtensionManagedToolRuntimeProviderContribution,
+  type ExtensionRuntimeDescriptor,
   type ExtensionRuntimeProviderContribution,
+  type ExtensionRuntimeRequirement,
   type ExtensionRuntimeSelection,
-  type ExtensionSelectedRuntimeRequirement,
-  type ExtensionSelectedRuntimeTaskExecution,
+  type ExtensionRuntimeTaskExecution,
+  type ExtensionTerminalPackageRuntimeProviderContribution,
   type ExtensionTaskExecution,
   type ExtensionTextMateGrammarContribution,
   type ExtensionWorkspaceFile,
@@ -163,6 +170,12 @@ describe("public extension SDK", () => {
     expect(EXTENSION_PERMISSIONS).toContain("runtimes.execute");
     expect(EXTENSION_CONTRIBUTION_FIELDS).toContain("developmentStacks");
     expect(EXTENSION_CONTRIBUTION_FIELDS).toContain("runtimeProviders");
+    expect(EXTENSION_RUNTIME_SOURCE_KINDS).toEqual([
+      "terminalPackage",
+      "managedTool",
+    ]);
+    expect(EXTENSION_TASK_EXECUTION_KINDS).toEqual(["managedTool", "runtime"]);
+    expect(EXTENSION_TASK_CONSOLES).toEqual(["terminal", "captured"]);
     expect(EXTENSION_TERMINAL_PACKAGE_REPOSITORIES).toEqual([
       "zyntax",
       "termux-main",
@@ -233,38 +246,68 @@ describe("public extension SDK", () => {
       | Readonly<{ kind: "value"; value: string }>
       | Readonly<{ kind: "cancelled" }>
     >();
-    expectTypeOf<ExtensionManifest["selectedRuntimeRequirements"]>()
-      .toEqualTypeOf<ExtensionSelectedRuntimeRequirement[] | undefined>();
+    expectTypeOf<ExtensionManifest["runtimeRequirements"]>()
+      .toEqualTypeOf<ExtensionRuntimeRequirement[] | undefined>();
+    expectTypeOf<ExtensionRuntimeRequirement>().toEqualTypeOf<{
+      readonly id: string;
+      readonly runtime: string;
+      readonly minimumVersion: string;
+      readonly capabilities: readonly string[];
+    }>();
     expectTypeOf<ExtensionRuntimeProviderContribution["source"]>()
+      .toEqualTypeOf<
+        | { readonly kind: "terminalPackage"; readonly providerId: string }
+        | { readonly kind: "managedTool"; readonly toolId: string }
+      >();
+    expectTypeOf<ExtensionTerminalPackageRuntimeProviderContribution>()
       .toMatchTypeOf<{
-        readonly kind: "terminalPackage";
-        readonly stack: string;
-        readonly package: string;
-        readonly executable: string;
+        readonly commands: readonly {
+          readonly id: string;
+          readonly executable: string;
+        }[];
         readonly versionProbe: {
-          readonly arguments: readonly string[];
+          readonly command: string;
+          readonly args: readonly string[];
           readonly stream: "stdout" | "stderr";
           readonly prefix: string;
         };
       }>();
+    expectTypeOf<ExtensionManagedToolRuntimeProviderContribution["source"]>()
+      .toEqualTypeOf<{
+        readonly kind: "managedTool";
+        readonly toolId: string;
+      }>();
+    expectTypeOf<
+      "source" extends keyof ExtensionRuntimeDescriptor ? true : false
+    >().toEqualTypeOf<false>();
     expectTypeOf<Extract<
       ExtensionTaskExecution,
-      { readonly kind: "selectedRuntime" }
-    >>().toEqualTypeOf<ExtensionSelectedRuntimeTaskExecution>();
-    expectTypeOf<ExtensionSelectedRuntimeTaskExecution>().toMatchTypeOf<{
-      readonly kind: "selectedRuntime";
+      { readonly kind: "runtime" }
+    >>().toEqualTypeOf<ExtensionRuntimeTaskExecution>();
+    expectTypeOf<ExtensionRuntimeTaskExecution>().toMatchTypeOf<{
+      readonly kind: "runtime";
       readonly requirement: string;
-      readonly arguments: readonly string[];
+      readonly command: string;
+      readonly args: readonly string[];
       readonly workingDirectory: readonly string[];
+      readonly console: "terminal" | "captured";
     }>();
+    expectTypeOf<ExtensionManagedToolTaskExecution["console"]>()
+      .toEqualTypeOf<"terminal" | "captured">();
+    expectTypeOf<ExtensionManagedToolTaskExecution["args"]>()
+      .toEqualTypeOf<readonly string[]>();
+    expectTypeOf<Extract<ExtensionTaskExecution, { readonly kind: "terminal" }>>()
+      .toEqualTypeOf<never>();
     expectTypeOf<
       "runtimes.execute" extends ExtensionHostPermission ? true : false
     >().toEqualTypeOf<false>();
     expectTypeOf<Extract<
       ExtensionRuntimeSelection,
       { readonly state: "ready" }
-    >["runtime"]["identity"]>().toEqualTypeOf<{
-      readonly providerId: string;
+    >["provider"]["identity"]>().toEqualTypeOf<{
+      readonly source:
+        | { readonly kind: "terminalPackage"; readonly providerId: string }
+        | { readonly kind: "managedTool"; readonly toolId: string };
       readonly runtimeId: string;
       readonly fingerprint: string;
     }>();

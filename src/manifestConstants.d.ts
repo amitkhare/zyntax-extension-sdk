@@ -30,6 +30,18 @@ export declare const EXTENSION_TERMINAL_PACKAGE_MAX_RESULT_BYTES: number;
 export declare const EXTENSION_EXECUTION_MAX_ARGUMENTS: 32;
 export declare const EXTENSION_EXECUTION_MAX_ARGUMENT_LENGTH: 512;
 export declare const EXTENSION_EXECUTION_MAX_NODE_MODULES: 16;
+export declare const EXTENSION_RUNTIME_SOURCE_KINDS: readonly [
+  "terminalPackage",
+  "managedTool",
+];
+export declare const EXTENSION_TASK_EXECUTION_KINDS: readonly [
+  "managedTool",
+  "runtime",
+];
+export declare const EXTENSION_TASK_CONSOLES: readonly [
+  "terminal",
+  "captured",
+];
 export declare const EXTENSION_LSP_POSITION_CAPABILITIES: readonly [
   "completion",
   "hover",

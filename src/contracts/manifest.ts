@@ -11,7 +11,7 @@ import type { ExtensionPersistentServiceContribution } from "./persistentService
 import type { ExtensionDevelopmentStackContribution } from "./terminalPackages.js";
 import type {
   ExtensionRuntimeProviderContribution,
-  ExtensionSelectedRuntimeRequirement,
+  ExtensionRuntimeRequirement,
 } from "./runtimes.js";
 import {
   EXTENSION_ACTIVATION_PROVIDER_KINDS,
@@ -28,7 +28,10 @@ import {
   EXTENSION_DEVELOPMENT_STACK_MAX_LABEL_LENGTH,
   EXTENSION_DEVELOPMENT_STACK_MAX_REQUIREMENTS,
   EXTENSION_PROVIDER_KINDS,
+  EXTENSION_RUNTIME_SOURCE_KINDS,
   EXTENSION_SEARCH_PROVIDER_KINDS,
+  EXTENSION_TASK_CONSOLES,
+  EXTENSION_TASK_EXECUTION_KINDS,
   EXTENSION_TERMINAL_PACKAGE_MAX_REQUEST_BYTES,
   EXTENSION_TERMINAL_PACKAGE_MAX_RESULT_BYTES,
   EXTENSION_TERMINAL_PACKAGE_MAX_SYMBOL_LENGTH,
@@ -59,7 +62,10 @@ export {
   EXTENSION_DEVELOPMENT_STACK_MAX_LABEL_LENGTH,
   EXTENSION_DEVELOPMENT_STACK_MAX_REQUIREMENTS,
   EXTENSION_PROVIDER_KINDS,
+  EXTENSION_RUNTIME_SOURCE_KINDS,
   EXTENSION_SEARCH_PROVIDER_KINDS,
+  EXTENSION_TASK_CONSOLES,
+  EXTENSION_TASK_EXECUTION_KINDS,
   EXTENSION_TERMINAL_PACKAGE_MAX_REQUEST_BYTES,
   EXTENSION_TERMINAL_PACKAGE_MAX_RESULT_BYTES,
   EXTENSION_TERMINAL_PACKAGE_MAX_SYMBOL_LENGTH,
@@ -709,7 +715,7 @@ export interface ExtensionManifest {
   permissions: ExtensionPermission[];
   dependencies: ExtensionDependency[];
   toolRequirements: ManagedToolRequirement[];
-  selectedRuntimeRequirements?: ExtensionSelectedRuntimeRequirement[];
+  runtimeRequirements?: ExtensionRuntimeRequirement[];
   contributes: {
     languages?: ExtensionLanguageContribution[];
     grammars?: ExtensionTextMateGrammarContribution[];

@@ -1,52 +1,81 @@
-/** One selected-runtime capability required by an extension. */
-export interface ExtensionSelectedRuntimeRequirement {
-  /** Manifest-local identity referenced by selected-runtime execution plans. */
+/** One development-runtime capability required by an extension. */
+export interface ExtensionRuntimeRequirement {
+  /** Manifest-local identity referenced by runtime execution plans. */
   readonly id: string;
-  /** Canonical runtime family shared by providers and consumers, such as `python`. */
+  /** Stable runtime family, such as `python`, `node`, `java`, or `rust`. */
   readonly runtime: string;
-  /** Strict conjunctive semantic-version range. */
-  readonly version: string;
+  /** Inclusive semantic-version floor. Extensions do not pin or cap the selected version. */
+  readonly minimumVersion: string;
   readonly capabilities: readonly string[];
 }
 
-/** A bounded version probe for one exact runtime executable. */
+/** One symbolic command exposed by a terminal-package runtime provider. */
+export interface ExtensionTerminalPackageRuntimeCommand {
+  readonly id: string;
+  /** Normalized prefix-relative regular file owned by the terminal package. */
+  readonly executable: string;
+}
+
+/** A bounded version probe using one command declared by the same provider. */
 export interface ExtensionRuntimeVersionProbe {
-  readonly arguments: readonly string[];
+  readonly command: string;
+  readonly args: readonly string[];
   readonly stream: "stdout" | "stderr";
   /** Exact text before the first semantic-version token in the selected stream. */
   readonly prefix: string;
 }
 
-/** A package-owned executable inside the app's terminal runtime prefix. */
+/** A runtime installed through the terminal package system. */
 export interface ExtensionTerminalPackageRuntimeSource {
   readonly kind: "terminalPackage";
-  /** Development-stack contribution declared by the same manifest. */
-  readonly stack: string;
-  /** Stack-local terminal-package requirement identity. */
-  readonly package: string;
-  /** Normalized prefix-relative regular file owned by the declared package. */
-  readonly executable: string;
-  readonly versionProbe: ExtensionRuntimeVersionProbe;
+  /** Stable terminal-package provider identity resolved by the host. */
+  readonly providerId: string;
 }
 
-/** Declarative discovery of one user-installed runtime without PATH lookup. */
-export interface ExtensionRuntimeProviderContribution {
+/** A signed managed tool which explicitly supports general development execution. */
+export interface ExtensionManagedToolRuntimeSource {
+  readonly kind: "managedTool";
+  readonly toolId: string;
+}
+
+export type ExtensionRuntimeSource =
+  | ExtensionTerminalPackageRuntimeSource
+  | ExtensionManagedToolRuntimeSource;
+
+interface ExtensionRuntimeProviderContributionBase {
   readonly id: string;
   readonly runtime: string;
   readonly label: string;
   readonly capabilities: readonly string[];
-  readonly source: ExtensionTerminalPackageRuntimeSource;
 }
+
+/** Declarative discovery of one user-installed terminal-package runtime. */
+export interface ExtensionTerminalPackageRuntimeProviderContribution
+  extends ExtensionRuntimeProviderContributionBase {
+  readonly source: ExtensionTerminalPackageRuntimeSource;
+  readonly commands: readonly ExtensionTerminalPackageRuntimeCommand[];
+  readonly versionProbe: ExtensionRuntimeVersionProbe;
+}
+
+/** Declarative discovery of one app-managed development runtime. */
+export interface ExtensionManagedToolRuntimeProviderContribution
+  extends ExtensionRuntimeProviderContributionBase {
+  readonly source: ExtensionManagedToolRuntimeSource;
+}
+
+export type ExtensionRuntimeProviderContribution =
+  | ExtensionTerminalPackageRuntimeProviderContribution
+  | ExtensionManagedToolRuntimeProviderContribution;
 
 /** Opaque identity of one exact runtime observation. No native path is exposed. */
 export interface ExtensionRuntimeIdentity {
-  readonly providerId: string;
+  readonly source: ExtensionRuntimeSource;
   readonly runtimeId: string;
-  /** Changes when the selected executable or its owning package changes. */
+  /** Changes when the selected executable or its owning installation changes. */
   readonly fingerprint: string;
 }
 
-/** Public metadata for one available selected-runtime candidate. */
+/** Public metadata for one installed runtime candidate. */
 export interface ExtensionRuntimeDescriptor {
   readonly identity: ExtensionRuntimeIdentity;
   readonly runtime: string;
@@ -55,8 +84,6 @@ export interface ExtensionRuntimeDescriptor {
   readonly capabilities: readonly string[];
 }
 
-export type ExtensionRuntimeSelectionScope = "device" | "project";
-
 export type ExtensionRuntimeUnavailableReason =
   | "notSelected"
   | "missing"
@@ -64,25 +91,29 @@ export type ExtensionRuntimeUnavailableReason =
   | "incompatible"
   | "probeFailed";
 
-/** Host-owned resolution of a selected-runtime requirement. */
+/** Host-owned global selection for one runtime family. */
 export type ExtensionRuntimeSelection =
   | {
       readonly state: "ready";
-      readonly scope: ExtensionRuntimeSelectionScope;
-      readonly runtime: ExtensionRuntimeDescriptor;
+      readonly runtime: string;
+      readonly provider: ExtensionRuntimeDescriptor;
     }
   | {
       readonly state: "unavailable";
-      readonly scope: ExtensionRuntimeSelectionScope | null;
+      readonly runtime: string;
       readonly selected: ExtensionRuntimeIdentity | null;
       readonly reason: ExtensionRuntimeUnavailableReason;
       /** Bounded diagnostic suitable for a precise user-facing notification. */
       readonly detail: string;
     };
 
-/** Symbolic selected-runtime route. The host resolves the exact executable. */
-export interface ExtensionSelectedRuntimeExecutionBase {
-  readonly kind: "selectedRuntime";
+export type ExtensionTaskConsole = "terminal" | "captured";
+
+/** Symbolic route through the globally selected runtime. */
+export interface ExtensionRuntimeExecutionBase {
+  readonly kind: "runtime";
   readonly requirement: string;
-  readonly arguments: readonly string[];
+  readonly command: string;
+  readonly args: readonly string[];
+  readonly console: ExtensionTaskConsole;
 }

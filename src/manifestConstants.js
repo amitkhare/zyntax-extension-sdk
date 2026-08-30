@@ -36,6 +36,22 @@ export const EXTENSION_EXECUTION_MAX_ARGUMENTS = 32;
 export const EXTENSION_EXECUTION_MAX_ARGUMENT_LENGTH = 512;
 export const EXTENSION_EXECUTION_MAX_NODE_MODULES = 16;
 
+/** Canonical runtime provider source kinds. */
+export const EXTENSION_RUNTIME_SOURCE_KINDS = Object.freeze([
+  "terminalPackage",
+  "managedTool",
+]);
+
+/** Canonical reviewed task execution and console routes. */
+export const EXTENSION_TASK_EXECUTION_KINDS = Object.freeze([
+  "managedTool",
+  "runtime",
+]);
+export const EXTENSION_TASK_CONSOLES = Object.freeze([
+  "terminal",
+  "captured",
+]);
+
 /** Canonical standard-LSP routes accepted in language-server capability matrices. */
 export const EXTENSION_LSP_POSITION_CAPABILITIES = Object.freeze([
   "completion",

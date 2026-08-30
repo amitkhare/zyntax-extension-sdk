@@ -15,7 +15,10 @@ import type {
   ExtensionJsonObject,
   ExtensionJsonValue,
 } from "./contracts/json.js";
-import type { ExtensionSelectedRuntimeExecutionBase } from "./contracts/runtimes.js";
+import type {
+  ExtensionRuntimeExecutionBase,
+  ExtensionTaskConsole,
+} from "./contracts/runtimes.js";
 
 export type ExtensionInlineCompletionTrigger =
   | { readonly kind: "automatic" }
@@ -402,20 +405,6 @@ export type ExtensionTaskGroup =
   | "other";
 
 /**
- * A reviewed task command for the host-owned interactive terminal.
- *
- * The executable is resolved by the user's terminal environment. Providers cannot supply a shell
- * command, native path, environment, or working-directory path; the host serializes the bounded
- * argv and resolves path segments inside the active project only after user approval.
- */
-export interface ExtensionTerminalTaskExecution {
-  readonly kind: "terminal";
-  readonly executable: string;
-  readonly arguments: readonly string[];
-  readonly workingDirectory: readonly string[];
-}
-
-/**
  * A task executed by one exact managed-tool release declared by the owning extension.
  *
  * The provider supplies only symbolic identities, bounded argv values, and project-relative
@@ -426,20 +415,20 @@ export interface ExtensionManagedToolTaskExecution {
   readonly kind: "managedTool";
   readonly tool: string;
   readonly entrypoint: string;
-  readonly arguments: readonly string[];
+  readonly args: readonly string[];
   readonly workingDirectory: readonly string[];
+  readonly console: ExtensionTaskConsole;
 }
 
-/** A task executed by the runtime explicitly selected for the active project. */
-export interface ExtensionSelectedRuntimeTaskExecution
-  extends ExtensionSelectedRuntimeExecutionBase {
+/** A task executed by the globally selected provider for its runtime requirement. */
+export interface ExtensionRuntimeTaskExecution
+  extends ExtensionRuntimeExecutionBase {
   readonly workingDirectory: readonly string[];
 }
 
 export type ExtensionTaskExecution =
-  | ExtensionTerminalTaskExecution
   | ExtensionManagedToolTaskExecution
-  | ExtensionSelectedRuntimeTaskExecution;
+  | ExtensionRuntimeTaskExecution;
 
 export interface ExtensionTaskDescriptor {
   readonly id: string;
