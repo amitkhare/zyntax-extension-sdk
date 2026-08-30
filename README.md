@@ -36,6 +36,21 @@ export const createCompletionProvider = defineCompletionProvider(
 Manifest validation remains host/tooling-owned. The SDK does not grant
 permissions or platform access.
 
+## Bundled package lifecycle
+
+An extension `extension.json` or managed-tool `tool.json` may declare the
+optional top-level field `"required": true`. The field has authority only when
+that exact package id is shipped in the APK's immutable package bundle. Such a
+package remains visible and updateable through the normal package pipeline, but
+the host does not allow its removal. Missing or `false` means removable. A Store
+or file-installed package cannot make itself non-removable by declaring the
+field, and an update cannot change the APK-owned lifecycle policy.
+
+Bundling itself is established by placing a signed `.zntx` or `.ztool` in the
+APK bundle directory; it is not another manifest field or a separate package
+format. Managed-tool schema and archive validation remain owned by the managed
+tooling, which applies the same optional boolean contract to `tool.json`.
+
 ## Notebook kernels
 
 A notebook-kernel provider returns only a symbolic runtime descriptor. Its
@@ -97,10 +112,53 @@ providers:
 }
 ```
 
-Runtime discovery and registration are host-owned. Extensions consume the
-globally selected compatible runtime through requirements and symbolic commands;
-they cannot add runtime candidates, probes, executable locations, environments,
-shell fragments, or fallback commands.
+Runtime inventory, verification, selection, and execution are host-owned. A
+declarative `contributes.runtimeProviders` entry may describe how a signed
+terminal-package repository exposes an installed runtime; it does not inspect
+packages or execute code. The host verifies the exact owning package and
+prefix-relative command files, performs the bounded version probe, and then adds
+the candidate to Runtime Manager. It never searches `PATH`.
+
+```json
+{
+  "permissions": ["terminal.packages"],
+  "contributes": {
+    "runtimeProviders": [{
+      "id": "termux.node",
+      "runtime": "node",
+      "label": "Terminal Node.js",
+      "capabilities": ["process.execute"],
+      "package": { "repository": "termux-main", "name": "nodejs" },
+      "commands": [
+        { "id": "node", "path": "bin/node" },
+        {
+          "id": "npm",
+          "path": "bin/npm",
+          "package": { "repository": "termux-main", "name": "npm" },
+          "capabilities": ["package-manager.npm"]
+        }
+      ],
+      "versionProbe": {
+        "command": "node",
+        "args": ["--version"],
+        "stream": "stdout",
+        "prefix": "v"
+      }
+    }]
+  }
+}
+```
+
+The top-level `package` is the required primary owner. Commands use that owner
+unless they declare an optional companion `package`. Companion commands and
+their sorted, unique capabilities appear only while that package owns the
+declared file. The version probe must use a primary-owned command, so a missing
+companion never removes the runtime itself. Managed `.ztool` runtimes instead
+declare the runtime they actually contain; they do not act as package-provider
+registries.
+Extensions consume the globally selected compatible runtime through requirements
+and symbolic commands; no provider can declare a native path, environment,
+shell fragment, or fallback command.
 
 A runtime task references its manifest-local requirement and a provider-neutral
 command id. Its required console mode chooses an interactive PTY or captured

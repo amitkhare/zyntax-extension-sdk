@@ -86,6 +86,7 @@ import {
   type ExtensionRuntimeDescriptor,
   type ExtensionRuntimeCommandConfigurationReference,
   type ExtensionRuntimeCommandReference,
+  type ExtensionRuntimeProviderContribution,
   type ExtensionRuntimeRequirement,
   type ExtensionRuntimeSelection,
   type ExtensionRuntimeTaskExecution,
@@ -173,6 +174,7 @@ describe("public extension SDK", () => {
     expect(EXTENSION_PERMISSIONS).toContain("terminal.packages");
     expect(EXTENSION_PERMISSIONS).toContain("runtimes.execute");
     expect(EXTENSION_CONTRIBUTION_FIELDS).toContain("developmentStacks");
+    expect(EXTENSION_CONTRIBUTION_FIELDS).toContain("runtimeProviders");
     expect(EXTENSION_RUNTIME_SOURCE_KINDS).toEqual([
       "terminalPackage",
       "managedTool",
@@ -288,11 +290,38 @@ describe("public extension SDK", () => {
     >();
     expectTypeOf<ExtensionManifest["runtimeRequirements"]>()
       .toEqualTypeOf<ExtensionRuntimeRequirement[] | undefined>();
+    expectTypeOf<ExtensionManifest["required"]>()
+      .toEqualTypeOf<boolean | undefined>();
     expectTypeOf<ExtensionRuntimeRequirement>().toEqualTypeOf<{
       readonly id: string;
       readonly runtime: string;
       readonly minimumVersion: string;
       readonly capabilities: readonly string[];
+    }>();
+    expectTypeOf<ExtensionRuntimeProviderContribution>().toEqualTypeOf<{
+      readonly id: string;
+      readonly runtime: string;
+      readonly label: string;
+      readonly capabilities: readonly string[];
+      readonly package: {
+        readonly repository: string;
+        readonly name: string;
+      };
+      readonly commands: readonly {
+        readonly id: string;
+        readonly path: string;
+        readonly package?: {
+          readonly repository: string;
+          readonly name: string;
+        };
+        readonly capabilities?: readonly string[];
+      }[];
+      readonly versionProbe: {
+        readonly command: string;
+        readonly args: readonly string[];
+        readonly stream: "stdout" | "stderr";
+        readonly prefix: string;
+      };
     }>();
     expectTypeOf<ExtensionRuntimeCommandReference>().toEqualTypeOf<{
       readonly requirement: string;

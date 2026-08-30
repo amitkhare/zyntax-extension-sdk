@@ -9,6 +9,46 @@ export interface ExtensionRuntimeRequirement {
   readonly capabilities: readonly string[];
 }
 
+/** One terminal-package command exposed by a declarative runtime provider. */
+export interface ExtensionRuntimeProviderCommand {
+  readonly id: string;
+  /** Normalized terminal-prefix-relative regular file owned by the package. */
+  readonly path: string;
+  /** Optional companion owner; absence means the provider's primary package. */
+  readonly package?: ExtensionRuntimeProviderPackage;
+  /** Capabilities added only while this command and its owning package are valid. */
+  readonly capabilities?: readonly string[];
+}
+
+/** Terminal package whose installed files provide one runtime candidate. */
+export interface ExtensionRuntimeProviderPackage {
+  readonly repository: string;
+  readonly name: string;
+}
+
+/** A bounded version probe using one command declared by the same provider. */
+export interface ExtensionRuntimeVersionProbe {
+  readonly command: string;
+  readonly args: readonly string[];
+  readonly stream: "stdout" | "stderr";
+  /** Exact text before the first semantic-version token in the selected stream. */
+  readonly prefix: string;
+}
+
+/**
+ * Declarative discovery of one user-installed terminal-package runtime.
+ * Inventory, file ownership, probing, and process launch remain host-owned.
+ */
+export interface ExtensionRuntimeProviderContribution {
+  readonly id: string;
+  readonly runtime: string;
+  readonly label: string;
+  readonly capabilities: readonly string[];
+  readonly package: ExtensionRuntimeProviderPackage;
+  readonly commands: readonly ExtensionRuntimeProviderCommand[];
+  readonly versionProbe: ExtensionRuntimeVersionProbe;
+}
+
 /**
  * One manifest-owned symbolic executable route through the globally selected runtime.
  * The host resolves both fields without exposing an executable path or environment.

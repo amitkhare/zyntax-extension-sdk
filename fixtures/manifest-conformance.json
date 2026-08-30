@@ -31,6 +31,7 @@
       "name": "Contract Language Server",
       "kind": "languageServer",
       "version": "1.0.0",
+      "required": true,
       "platform": {
         "os": "android",
         "architecture": "arm64-v8a"
@@ -116,6 +117,216 @@
         "permissions": [
           "filesystem"
         ]
+      }
+    },
+    {
+      "id": "package-required-valid",
+      "area": "package",
+      "valid": true,
+      "patch": {
+        "required": true
+      }
+    },
+    {
+      "id": "package-required-type-invalid",
+      "area": "package",
+      "valid": false,
+      "patch": {
+        "required": "true"
+      }
+    },
+    {
+      "id": "runtime-provider-valid",
+      "area": "runtime",
+      "valid": true,
+      "patch": {
+        "permissions": [
+          "terminal.packages"
+        ],
+        "contributes": {
+          "runtimeProviders": [
+            {
+              "id": "termux.node",
+              "runtime": "node",
+              "label": "Terminal Node.js",
+              "capabilities": [
+                "process.execute"
+              ],
+              "package": {
+                "repository": "termux-main",
+                "name": "nodejs"
+              },
+              "commands": [
+                {
+                  "id": "node",
+                  "path": "bin/node"
+                },
+                {
+                  "id": "npm",
+                  "path": "bin/npm",
+                  "package": {
+                    "repository": "termux-main",
+                    "name": "npm"
+                  },
+                  "capabilities": [
+                    "package-manager.npm"
+                  ]
+                }
+              ],
+              "versionProbe": {
+                "command": "node",
+                "args": [
+                  "--version"
+                ],
+                "stream": "stdout",
+                "prefix": "v"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "runtime-provider-companion-probe-invalid",
+      "area": "runtime",
+      "valid": false,
+      "patch": {
+        "permissions": [
+          "terminal.packages"
+        ],
+        "contributes": {
+          "runtimeProviders": [
+            {
+              "id": "termux.node",
+              "runtime": "node",
+              "label": "Terminal Node.js",
+              "capabilities": [
+                "process.execute"
+              ],
+              "package": {
+                "repository": "termux-main",
+                "name": "nodejs"
+              },
+              "commands": [
+                {
+                  "id": "node",
+                  "path": "bin/node"
+                },
+                {
+                  "id": "npm",
+                  "path": "bin/npm",
+                  "package": {
+                    "repository": "termux-main",
+                    "name": "npm"
+                  },
+                  "capabilities": [
+                    "package-manager.npm"
+                  ]
+                }
+              ],
+              "versionProbe": {
+                "command": "npm",
+                "args": [
+                  "--version"
+                ],
+                "stream": "stdout",
+                "prefix": "npm "
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "runtime-provider-command-capabilities-invalid",
+      "area": "runtime",
+      "valid": false,
+      "patch": {
+        "permissions": [
+          "terminal.packages"
+        ],
+        "contributes": {
+          "runtimeProviders": [
+            {
+              "id": "termux.node",
+              "runtime": "node",
+              "label": "Terminal Node.js",
+              "capabilities": [
+                "process.execute"
+              ],
+              "package": {
+                "repository": "termux-main",
+                "name": "nodejs"
+              },
+              "commands": [
+                {
+                  "id": "node",
+                  "path": "bin/node"
+                },
+                {
+                  "id": "npm",
+                  "path": "bin/npm",
+                  "package": {
+                    "repository": "termux-main",
+                    "name": "npm"
+                  },
+                  "capabilities": [
+                    "package-manager.npm",
+                    "package-manager.npm"
+                  ]
+                }
+              ],
+              "versionProbe": {
+                "command": "node",
+                "args": [
+                  "--version"
+                ],
+                "stream": "stdout",
+                "prefix": "v"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "runtime-provider-path-invalid",
+      "area": "runtime",
+      "valid": false,
+      "patch": {
+        "permissions": [
+          "terminal.packages"
+        ],
+        "contributes": {
+          "runtimeProviders": [
+            {
+              "id": "termux.python",
+              "runtime": "python",
+              "label": "Terminal Python",
+              "capabilities": [
+                "process.execute"
+              ],
+              "package": {
+                "repository": "termux-main",
+                "name": "python"
+              },
+              "commands": [
+                {
+                  "id": "python",
+                  "path": "/bin/python"
+                }
+              ],
+              "versionProbe": {
+                "command": "python",
+                "args": [
+                  "--version"
+                ],
+                "stream": "stdout",
+                "prefix": "Python "
+              }
+            }
+          ]
+        }
       }
     },
     {
