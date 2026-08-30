@@ -163,7 +163,7 @@
                 },
                 {
                   "id": "npm",
-                  "path": "bin/npm",
+                  "path": "lib/node_modules/npm/bin/npm-cli.js",
                   "package": {
                     "repository": "termux-main",
                     "name": "npm"
@@ -214,7 +214,7 @@
                 },
                 {
                   "id": "npm",
-                  "path": "bin/npm",
+                  "path": "lib/node_modules/npm/bin/npm-cli.js",
                   "package": {
                     "repository": "termux-main",
                     "name": "npm"
@@ -265,7 +265,7 @@
                 },
                 {
                   "id": "npm",
-                  "path": "bin/npm",
+                  "path": "lib/node_modules/npm/bin/npm-cli.js",
                   "package": {
                     "repository": "termux-main",
                     "name": "npm"

@@ -133,7 +133,7 @@ the candidate to Runtime Manager. It never searches `PATH`.
         { "id": "node", "path": "bin/node" },
         {
           "id": "npm",
-          "path": "bin/npm",
+          "path": "lib/node_modules/npm/bin/npm-cli.js",
           "package": { "repository": "termux-main", "name": "npm" },
           "capabilities": ["package-manager.npm"]
         }
