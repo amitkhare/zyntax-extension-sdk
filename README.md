@@ -38,8 +38,12 @@ permissions or platform access.
 
 ## Notebook kernels
 
-A notebook-kernel provider returns only a symbolic managed-tool descriptor. The
-host owns the adapter process and its full-duplex framed JSON-RPC session. The
+A notebook-kernel provider returns only a symbolic runtime descriptor. Its
+`executable` names one manifest runtime requirement and one provider-neutral
+command. Literal arguments and signed managed-tool resource references are
+allowed; native paths, environment values, and fallback commands are not. The
+host resolves the currently selected compatible runtime and signed resources,
+then owns the adapter process and its full-duplex framed JSON-RPC session. The
 public protocol defines initialization, execution, strictly ordered
 status/output/comm events, kernel-to-host input requests, explicit interrupt and
 restart generations, cancellation, and idempotent shutdown. Output events are
@@ -51,6 +55,23 @@ any event for that generation.
 Kernel adapters remain runtime-neutral. They must not expose native paths,
 process handles, transport sockets, or renderer objects, and the host never
 infers a runtime from a notebook language or file name.
+
+```ts
+const descriptor = {
+  kind: "runtime" as const,
+  executable: {
+    requirement: "kernel-runtime",
+    command: "runtime",
+  },
+  args: [{
+    $toolResource: {
+      tool: "publisher.kernel-adapter",
+      resource: "adapter",
+    },
+  }],
+  protocol: "zyntax-notebook-jsonrpc" as const,
+};
+```
 
 ## Runtime Manager
 
@@ -79,7 +100,9 @@ providers:
 Runtime providers are declarative `contributes.runtimeProviders` entries. A
 terminal-package provider maps symbolic command ids to normalized,
 prefix-relative package-owned executables and probes its version through one of
-those ids. A managed provider references one signed tool which explicitly
+those ids. A command id is stable across providers for the same runtime family
+and is also the command name activated in host-owned shells. A managed provider
+references one signed tool which explicitly
 supports general development execution. Neither source can declare a native
 path, environment, shell fragment, or fallback command.
 
@@ -114,6 +137,27 @@ const execution = {
   console: "terminal" as const,
 };
 ```
+
+`ExtensionRuntimeCommandReference` is the same two-field executable reference
+for typed host process descriptors. Arbitrary provider configuration uses the
+reserved, explicit `ExtensionRuntimeCommandConfigurationReference` sentinel:
+
+```json
+{
+  "executable": {
+    "$runtimeCommand": {
+      "requirement": "language-runtime",
+      "command": "runtime"
+    }
+  }
+}
+```
+
+The host interprets only the tagged value; an ordinary JSON object containing
+`requirement` and `command` remains provider-owned JSON. The two strict
+validators check the exact path-free shapes. The host additionally verifies
+that `requirement` belongs to the installed manifest and that the selected
+provider exposes `command`.
 
 Public runtime identities contain only an opaque installed-source identity,
 stable candidate id, and exact observation fingerprint. Native locations never cross

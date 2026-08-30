@@ -54,6 +54,8 @@ import {
   defineProjectTemplateProvider,
   extensionJsonUtf8ByteLength,
   isExtensionExecutionArgument,
+  isExtensionRuntimeCommandConfigurationReference,
+  isExtensionRuntimeCommandReference,
   throwIfCancellationRequested,
   type ExtensionCompletionProvider,
   type ExtensionAssistedEditProviderContribution,
@@ -70,22 +72,27 @@ import {
   type ExtensionManifest,
   type ExtensionNetworkRequest,
   type ExtensionNotebookExecutionRequest,
+  type ExtensionNotebookKernelDescriptor,
   type ExtensionNotebookKernelEvent,
   type ExtensionNotebookKernelInputResult,
   type ExtensionNotebookKernelRestartRequest,
   type ExtensionPreviewProvider,
   type ExtensionPreviewProviderContribution,
   type ExtensionPreviewRequest,
+  type ExtensionProviderConfigurationValue,
   type ExtensionProjectTemplatePlan,
   type ExtensionProviderActivationContext,
   type ExtensionManagedToolTaskExecution,
   type ExtensionManagedToolRuntimeProviderContribution,
   type ExtensionRuntimeDescriptor,
+  type ExtensionRuntimeCommandConfigurationReference,
+  type ExtensionRuntimeCommandReference,
   type ExtensionRuntimeProviderContribution,
   type ExtensionRuntimeRequirement,
   type ExtensionRuntimeSelection,
   type ExtensionRuntimeTaskExecution,
   type ExtensionTerminalPackageRuntimeProviderContribution,
+  type ExtensionToolResourceReference,
   type ExtensionTaskExecution,
   type ExtensionTextMateGrammarContribution,
   type ExtensionWorkspaceFile,
@@ -188,6 +195,43 @@ describe("public extension SDK", () => {
     expect(isExtensionExecutionArgument("a".repeat(513))).toBe(false);
     expect(isExtensionExecutionArgument("")).toBe(true);
     expect(isExtensionExecutionArgument("bad\u0080arg")).toBe(false);
+    expect(isExtensionRuntimeCommandReference({
+      requirement: "project-runtime",
+      command: "runtime",
+    })).toBe(true);
+    expect(isExtensionRuntimeCommandReference({
+      requirement: "project-runtime",
+      command: "runtime",
+      executable: "/bin/runtime",
+    })).toBe(false);
+    expect(isExtensionRuntimeCommandReference({
+      requirement: "project/runtime",
+      command: "runtime",
+    })).toBe(false);
+    expect(isExtensionRuntimeCommandConfigurationReference({
+      $runtimeCommand: {
+        requirement: "project-runtime",
+        command: "runtime",
+      },
+    })).toBe(true);
+    expect(isExtensionRuntimeCommandConfigurationReference({
+      $runtimeCommand: {
+        requirement: "project-runtime",
+        command: "runtime",
+        executable: "/bin/runtime",
+      },
+    })).toBe(false);
+    expect(isExtensionRuntimeCommandConfigurationReference({
+      $runtimeCommand: {
+        requirement: "project-runtime",
+        command: "runtime",
+      },
+      fallback: "runtime",
+    })).toBe(false);
+    expect(isExtensionRuntimeCommandConfigurationReference({
+      requirement: "project-runtime",
+      command: "runtime",
+    })).toBe(false);
     expect(EXTENSION_LSP_POSITION_CAPABILITIES).toContain("documentHighlights");
     expect(EXTENSION_LSP_DOCUMENT_CAPABILITIES).toEqual(expect.arrayContaining([
       "documentSymbols",
@@ -254,6 +298,10 @@ describe("public extension SDK", () => {
       readonly minimumVersion: string;
       readonly capabilities: readonly string[];
     }>();
+    expectTypeOf<ExtensionRuntimeCommandReference>().toEqualTypeOf<{
+      readonly requirement: string;
+      readonly command: string;
+    }>();
     expectTypeOf<ExtensionRuntimeProviderContribution["source"]>()
       .toEqualTypeOf<
         | { readonly kind: "terminalPackage"; readonly providerId: string }
@@ -292,12 +340,33 @@ describe("public extension SDK", () => {
       readonly workingDirectory: readonly string[];
       readonly console: "terminal" | "captured";
     }>();
+    expectTypeOf<ExtensionRuntimeCommandConfigurationReference>()
+      .toEqualTypeOf<{
+        readonly $runtimeCommand: ExtensionRuntimeCommandReference;
+      }>();
+    expectTypeOf<ExtensionRuntimeCommandConfigurationReference>()
+      .toMatchTypeOf<ExtensionProviderConfigurationValue>();
     expectTypeOf<ExtensionManagedToolTaskExecution["console"]>()
       .toEqualTypeOf<"terminal" | "captured">();
     expectTypeOf<ExtensionManagedToolTaskExecution["args"]>()
       .toEqualTypeOf<readonly string[]>();
     expectTypeOf<Extract<ExtensionTaskExecution, { readonly kind: "terminal" }>>()
       .toEqualTypeOf<never>();
+    expectTypeOf<ExtensionNotebookKernelDescriptor>().toEqualTypeOf<{
+      readonly kind: "runtime";
+      readonly executable: ExtensionRuntimeCommandReference;
+      readonly args: readonly (string | ExtensionToolResourceReference)[];
+      readonly protocol: typeof EXTENSION_NOTEBOOK_KERNEL_PROTOCOL;
+    }>();
+    expectTypeOf<
+      "tool" extends keyof ExtensionNotebookKernelDescriptor ? true : false
+    >().toEqualTypeOf<false>();
+    expectTypeOf<
+      "entrypoint" extends keyof ExtensionNotebookKernelDescriptor ? true : false
+    >().toEqualTypeOf<false>();
+    expectTypeOf<
+      "arguments" extends keyof ExtensionNotebookKernelDescriptor ? true : false
+    >().toEqualTypeOf<false>();
     expectTypeOf<
       "runtimes.execute" extends ExtensionHostPermission ? true : false
     >().toEqualTypeOf<false>();

@@ -9,7 +9,57 @@ export interface ExtensionRuntimeRequirement {
   readonly capabilities: readonly string[];
 }
 
-/** One symbolic command exposed by a terminal-package runtime provider. */
+/**
+ * One manifest-owned symbolic executable route through the globally selected runtime.
+ * The host resolves both fields without exposing an executable path or environment.
+ */
+export interface ExtensionRuntimeCommandReference {
+  readonly requirement: string;
+  readonly command: string;
+}
+
+/**
+ * Explicit runtime executable reference embedded in arbitrary provider
+ * configuration. Untagged objects remain ordinary provider-owned JSON.
+ */
+export interface ExtensionRuntimeCommandConfigurationReference {
+  readonly $runtimeCommand: ExtensionRuntimeCommandReference;
+}
+
+const RUNTIME_COMMAND_SYMBOL = /^[a-z0-9][a-z0-9._-]{0,63}$/u;
+
+/** Strict structural validation for an isolated-provider runtime command reference. */
+export function isExtensionRuntimeCommandReference(
+  value: unknown,
+): value is ExtensionRuntimeCommandReference {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const reference = value as Record<string, unknown>;
+  const fields = Object.keys(reference).sort();
+  return fields.length === 2
+    && fields[0] === "command"
+    && fields[1] === "requirement"
+    && typeof reference.requirement === "string"
+    && RUNTIME_COMMAND_SYMBOL.test(reference.requirement)
+    && typeof reference.command === "string"
+    && RUNTIME_COMMAND_SYMBOL.test(reference.command);
+}
+
+/** Strict structural validation for the reserved provider-configuration value. */
+export function isExtensionRuntimeCommandConfigurationReference(
+  value: unknown,
+): value is ExtensionRuntimeCommandConfigurationReference {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const tagged = value as Record<string, unknown>;
+  const fields = Object.keys(tagged);
+  return fields.length === 1
+    && fields[0] === "$runtimeCommand"
+    && isExtensionRuntimeCommandReference(tagged.$runtimeCommand);
+}
+
+/**
+ * One stable command exposed by a terminal-package runtime provider.
+ * The same id is used by runtime consumers and as the active host-shell command name.
+ */
 export interface ExtensionTerminalPackageRuntimeCommand {
   readonly id: string;
   /** Normalized prefix-relative regular file owned by the terminal package. */
@@ -110,10 +160,9 @@ export type ExtensionRuntimeSelection =
 export type ExtensionTaskConsole = "terminal" | "captured";
 
 /** Symbolic route through the globally selected runtime. */
-export interface ExtensionRuntimeExecutionBase {
+export interface ExtensionRuntimeExecutionBase
+  extends ExtensionRuntimeCommandReference {
   readonly kind: "runtime";
-  readonly requirement: string;
-  readonly command: string;
   readonly args: readonly string[];
   readonly console: ExtensionTaskConsole;
 }

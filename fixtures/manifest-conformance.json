@@ -326,6 +326,51 @@
       }
     },
     {
+      "id": "runtime-notebook-kernel-valid",
+      "area": "runtime",
+      "valid": true,
+      "patch": {
+        "permissions": [
+          "extension.execute",
+          "runtimes.execute"
+        ],
+        "runtimeRequirements": [
+          {
+            "id": "kernel-runtime",
+            "runtime": "contract-runtime",
+            "minimumVersion": "1.0.0",
+            "capabilities": [
+              "process.execute"
+            ]
+          }
+        ],
+        "activationEvents": [
+          {
+            "kind": "notebook",
+            "notebook": "contract-kernel"
+          }
+        ],
+        "contributes": {
+          "notebookKernels": [
+            {
+              "id": "contract-kernel",
+              "label": "Contract Kernel",
+              "module": "providers/contract-kernel.js",
+              "export": "createContractKernel",
+              "notebookTypes": [
+                "contract-notebook"
+              ],
+              "languages": [
+                "contract"
+              ],
+              "group": "contract",
+              "priority": 100
+            }
+          ]
+        }
+      }
+    },
+    {
       "id": "runtime-minimum-version-invalid",
       "area": "runtime",
       "valid": false,

@@ -2,6 +2,7 @@ import type {
   EXTENSION_API_VERSION,
   ExtensionActivationEvent,
   ExtensionManifest,
+  ExtensionManagedToolArgument,
   ExtensionPermission,
   ExtensionProviderKind,
 } from "./contracts/manifest.js";
@@ -20,6 +21,10 @@ import type {
   ExtensionTerminalPackageTransactionSnapshot,
 } from "./contracts/terminalPackages.js";
 import type { EXTENSION_NOTEBOOK_KERNEL_PROTOCOL } from "./notebookKernelProtocol.js";
+import type {
+  ExtensionRuntimeCommandConfigurationReference,
+  ExtensionRuntimeCommandReference,
+} from "./contracts/runtimes.js";
 
 export type * from "./contracts/manifest.js";
 export { EXTENSION_PROVIDER_METHODS } from "./providerMethods.js";
@@ -58,7 +63,7 @@ export type * from "./agent/protocol.js";
 export type * from "./extensionFirst.js";
 export type * from "./contracts/persistentServices.js";
 export type * from "./contracts/terminalPackages.js";
-export type * from "./contracts/runtimes.js";
+export * from "./contracts/runtimes.js";
 export * from "./notebookKernelProtocol.js";
 
 export interface ExtensionDisposable {
@@ -185,6 +190,7 @@ export type ExtensionProviderConfigurationValue =
   | boolean
   | number
   | string
+  | ExtensionRuntimeCommandConfigurationReference
   | readonly ExtensionProviderConfigurationValue[]
   | { readonly [key: string]: ExtensionProviderConfigurationValue };
 
@@ -737,14 +743,13 @@ export interface ExtensionNotebookKernelShutdownResult {
 
 /**
  * Symbolic kernel process selected by an isolated extension provider. The host
- * validates the tool against the installed manifest and owns the process and
- * framed protocol for the complete notebook lifetime.
+ * resolves the globally selected runtime and signed tool resources, then owns
+ * the process and framed protocol for the complete notebook lifetime.
  */
 export interface ExtensionNotebookKernelDescriptor {
-  readonly kind: "managedTool";
-  readonly tool: string;
-  readonly entrypoint: string;
-  readonly arguments: readonly string[];
+  readonly kind: "runtime";
+  readonly executable: ExtensionRuntimeCommandReference;
+  readonly args: readonly ExtensionManagedToolArgument[];
   readonly protocol: typeof EXTENSION_NOTEBOOK_KERNEL_PROTOCOL;
 }
 
