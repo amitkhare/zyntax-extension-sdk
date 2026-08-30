@@ -289,6 +289,16 @@ export interface ExtensionDependency {
   version: string;
 }
 
+/**
+ * Another extension whose compatible installed contribution graph may be
+ * composed with this extension. Integrations are never installed implicitly
+ * and never block this extension from activating.
+ */
+export interface ExtensionIntegration {
+  id: string;
+  version: string;
+}
+
 export interface ExtensionLanguageServerContribution {
   id: string;
   execution: ManagedToolExecution;
@@ -716,6 +726,7 @@ export interface ExtensionManifest {
   activationEvents: ExtensionActivationEvent[];
   permissions: ExtensionPermission[];
   dependencies: ExtensionDependency[];
+  integrations: ExtensionIntegration[];
   toolRequirements: ManagedToolRequirement[];
   runtimeRequirements?: ExtensionRuntimeRequirement[];
   contributes: {

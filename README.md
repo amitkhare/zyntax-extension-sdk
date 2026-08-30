@@ -5,6 +5,13 @@ extension providers. It contains plain-data manifest and RPC types, canonical
 capability names, and small authoring helpers. It has no editor, WebView,
 filesystem, network, native-command, or app-private dependencies.
 
+Extension manifests distinguish required `dependencies` from `integrations`.
+Required dependencies are installed with the extension and must activate.
+Integrations only authorize composition with a compatible package that is
+already installed; they are never installed implicitly and never block the
+declaring extension from activating. Both arrays are explicit in every
+manifest.
+
 Provider code is bundled by the Zyntax extension tooling into a self-contained
 `providers/*.js` module. Import only this package for host DTOs and provider
 helpers; do not import application source or tooling internals.

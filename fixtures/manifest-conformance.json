@@ -13,6 +13,7 @@
     "activationEvents": [],
     "permissions": [],
     "dependencies": [],
+    "integrations": [],
     "toolRequirements": [],
     "contributes": {
       "languages": [

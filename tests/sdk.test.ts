@@ -66,6 +66,7 @@ import {
   type ExtensionHoverProvider,
   type ExtensionHtmlPreviewPolicy,
   type ExtensionHostTerminalProfileDescriptor,
+  type ExtensionIntegration,
   type ExtensionTerminalPackageIntent,
   type ExtensionTerminalPackageTransactionReceipt,
   type ExtensionJsonValue,
@@ -100,6 +101,12 @@ import {
 } from "../src/index.js";
 
 describe("public extension SDK", () => {
+  it("separates installed dependencies from non-installing integrations", () => {
+    expectTypeOf<ExtensionManifest["integrations"]>().toEqualTypeOf<
+      ExtensionIntegration[]
+    >();
+  });
+
   it("keeps inline HTML previews script-blocked", () => {
     const policy: ExtensionHtmlPreviewPolicy = { subresources: "project" };
     expect(policy).toEqual({ subresources: "project" });
