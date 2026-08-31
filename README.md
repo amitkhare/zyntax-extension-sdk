@@ -245,7 +245,11 @@ the candidate to Runtime Manager. It never searches `PATH`.
 The top-level `package` is the required primary owner. Commands use that owner
 unless they declare an optional companion `package`. Companion commands and
 their sorted, unique capabilities appear only while that package owns the
-declared file. The version probe must use a primary-owned command, so a missing
+declared file. An owned command may be an ELF or a bounded shebang script. A
+script is exposed only when its interpreter resolves to another exact command
+declared by the same provider; the host materializes that interpreter and the
+script path without consulting ambient `PATH`, and rejects missing or cyclic
+interpreter chains. The version probe must use a primary-owned command, so a missing
 companion never removes the runtime itself. Managed `.ztool` runtimes instead
 declare the runtime they actually contain; they do not act as package-provider
 registries. Selected and managed runtimes share the same provider-neutral
