@@ -78,6 +78,7 @@ import {
   type ExtensionNotebookKernelEvent,
   type ExtensionNotebookKernelInputResult,
   type ExtensionNotebookKernelRestartRequest,
+  type ExtensionNotebookTypeContribution,
   type ExtensionPreviewProvider,
   type ExtensionPreviewProviderContribution,
   type ExtensionPreviewRequest,
@@ -105,6 +106,57 @@ describe("public extension SDK", () => {
     expectTypeOf<ExtensionManifest["integrations"]>().toEqualTypeOf<
       ExtensionIntegration[]
     >();
+  });
+
+  it("requires explicit notebook file associations", () => {
+    const byExtension: ExtensionNotebookTypeContribution = {
+      id: "jupyter-notebook",
+      type: "jupyter-notebook",
+      label: "Jupyter Notebook",
+      module: "providers/jupyter-notebook.js",
+      export: "createJupyterNotebookSerializerProvider",
+      extensions: [".ipynb"],
+      filenames: [],
+      priority: 100,
+    };
+    const byFilename: ExtensionNotebookTypeContribution = {
+      id: "named-notebook",
+      type: "named-notebook",
+      label: "Named Notebook",
+      module: "providers/named-notebook.js",
+      export: "createNamedNotebookSerializerProvider",
+      extensions: [],
+      filenames: ["Notebook"],
+      priority: 100,
+    };
+    expect(byExtension.extensions).toEqual([".ipynb"]);
+    expect(byFilename.filenames).toEqual(["Notebook"]);
+
+    // @ts-expect-error Both association arrays cannot be empty.
+    const empty: ExtensionNotebookTypeContribution = {
+      ...byExtension,
+      extensions: [],
+      filenames: [],
+    };
+    const undefinedFilenames: ExtensionNotebookTypeContribution = {
+      ...byExtension,
+      extensions: [".ipynb"],
+      // @ts-expect-error Both association fields must contain arrays.
+      filenames: undefined,
+    };
+    // @ts-expect-error Both association fields are required explicitly.
+    const omittedFilenames: ExtensionNotebookTypeContribution = {
+      id: "jupyter-notebook",
+      type: "jupyter-notebook",
+      label: "Jupyter Notebook",
+      module: "providers/jupyter-notebook.js",
+      export: "createJupyterNotebookSerializerProvider",
+      extensions: [".ipynb"],
+      priority: 100,
+    };
+    void empty;
+    void undefinedFilenames;
+    void omittedFilenames;
   });
 
   it("keeps inline HTML previews script-blocked", () => {

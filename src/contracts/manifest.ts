@@ -550,14 +550,27 @@ export interface ExtensionDebuggerContribution {
   priority: number;
 }
 
-export interface ExtensionNotebookTypeContribution {
+export type ExtensionNotebookTypeContribution = {
   id: string;
   type: string;
   label: string;
   module: string;
   export: string;
   priority: number;
-}
+} & (
+  | {
+      /** Canonical lowercase file extensions, including the leading dot. */
+      extensions: [string, ...string[]];
+      /** Exact file basenames. Matching is case-insensitive. */
+      filenames: string[];
+    }
+  | {
+      /** Canonical lowercase file extensions, including the leading dot. */
+      extensions: string[];
+      /** Exact file basenames. Matching is case-insensitive. */
+      filenames: [string, ...string[]];
+    }
+);
 
 export interface ExtensionNotebookKernelContribution {
   id: string;

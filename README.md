@@ -43,6 +43,37 @@ export const createCompletionProvider = defineCompletionProvider(
 Manifest validation remains host/tooling-owned. The SDK does not grant
 permissions or platform access.
 
+## Notebook file associations
+
+Every contributed notebook type explicitly declares both `extensions` and
+`filenames`. At least one of those arrays must be non-empty. Extensions are
+canonical lowercase suffixes that include the leading dot, such as `.ipynb`;
+filenames are exact basenames without path separators. Matching is
+case-insensitive, including compound extensions.
+
+These signed associations let the host offer a serializer only for files it
+claims. The host also enforces the association when deserializing and
+serializing, so a notebook provider cannot be selected for an unrelated file.
+Notebook types do not create editor-language identities, and the host does not
+infer associations from a type name or inspect file contents to choose one.
+
+```json
+{
+  "contributes": {
+    "notebookTypes": [{
+      "id": "jupyter-notebook",
+      "type": "jupyter-notebook",
+      "label": "Jupyter Notebook",
+      "module": "providers/jupyter-notebook.js",
+      "export": "createJupyterNotebookSerializerProvider",
+      "extensions": [".ipynb"],
+      "filenames": [],
+      "priority": 100
+    }]
+  }
+}
+```
+
 ## Bundled package lifecycle
 
 An extension `extension.json` or managed-tool `tool.json` may declare the

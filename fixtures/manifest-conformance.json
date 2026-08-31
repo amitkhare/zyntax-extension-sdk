@@ -625,6 +625,291 @@
       }
     },
     {
+      "id": "notebook-type-extension-association-valid",
+      "area": "provider",
+      "valid": true,
+      "patch": {
+        "permissions": [
+          "extension.execute"
+        ],
+        "activationEvents": [
+          {
+            "kind": "notebook",
+            "notebook": "contract-notebook"
+          }
+        ],
+        "contributes": {
+          "notebookTypes": [
+            {
+              "id": "contract-notebook",
+              "type": "contract-notebook",
+              "label": "Contract Notebook",
+              "module": "providers/contract-notebook.js",
+              "export": "createContractNotebook",
+              "extensions": [
+                ".contract.ipynb"
+              ],
+              "filenames": [],
+              "priority": 100
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "notebook-type-filename-association-valid",
+      "area": "provider",
+      "valid": true,
+      "patch": {
+        "permissions": [
+          "extension.execute"
+        ],
+        "activationEvents": [
+          {
+            "kind": "notebook",
+            "notebook": "contract-notebook"
+          }
+        ],
+        "contributes": {
+          "notebookTypes": [
+            {
+              "id": "contract-notebook",
+              "type": "contract-notebook",
+              "label": "Contract Notebook",
+              "module": "providers/contract-notebook.js",
+              "export": "createContractNotebook",
+              "extensions": [],
+              "filenames": [
+                "ContractNotebook"
+              ],
+              "priority": 100
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "notebook-type-empty-associations-invalid",
+      "area": "provider",
+      "valid": false,
+      "patch": {
+        "permissions": [
+          "extension.execute"
+        ],
+        "activationEvents": [
+          {
+            "kind": "notebook",
+            "notebook": "contract-notebook"
+          }
+        ],
+        "contributes": {
+          "notebookTypes": [
+            {
+              "id": "contract-notebook",
+              "type": "contract-notebook",
+              "label": "Contract Notebook",
+              "module": "providers/contract-notebook.js",
+              "export": "createContractNotebook",
+              "extensions": [],
+              "filenames": [],
+              "priority": 100
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "notebook-type-implicit-filenames-invalid",
+      "area": "provider",
+      "valid": false,
+      "patch": {
+        "permissions": [
+          "extension.execute"
+        ],
+        "activationEvents": [
+          {
+            "kind": "notebook",
+            "notebook": "contract-notebook"
+          }
+        ],
+        "contributes": {
+          "notebookTypes": [
+            {
+              "id": "contract-notebook",
+              "type": "contract-notebook",
+              "label": "Contract Notebook",
+              "module": "providers/contract-notebook.js",
+              "export": "createContractNotebook",
+              "extensions": [
+                ".ipynb"
+              ],
+              "priority": 100
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "notebook-type-implicit-extensions-invalid",
+      "area": "provider",
+      "valid": false,
+      "patch": {
+        "permissions": [
+          "extension.execute"
+        ],
+        "activationEvents": [
+          {
+            "kind": "notebook",
+            "notebook": "contract-notebook"
+          }
+        ],
+        "contributes": {
+          "notebookTypes": [
+            {
+              "id": "contract-notebook",
+              "type": "contract-notebook",
+              "label": "Contract Notebook",
+              "module": "providers/contract-notebook.js",
+              "export": "createContractNotebook",
+              "filenames": [
+                "Notebook"
+              ],
+              "priority": 100
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "notebook-type-extension-canonical-form-invalid",
+      "area": "provider",
+      "valid": false,
+      "patch": {
+        "permissions": [
+          "extension.execute"
+        ],
+        "activationEvents": [
+          {
+            "kind": "notebook",
+            "notebook": "contract-notebook"
+          }
+        ],
+        "contributes": {
+          "notebookTypes": [
+            {
+              "id": "contract-notebook",
+              "type": "contract-notebook",
+              "label": "Contract Notebook",
+              "module": "providers/contract-notebook.js",
+              "export": "createContractNotebook",
+              "extensions": [
+                "ipynb"
+              ],
+              "filenames": [],
+              "priority": 100
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "notebook-type-filename-path-invalid",
+      "area": "provider",
+      "valid": false,
+      "patch": {
+        "permissions": [
+          "extension.execute"
+        ],
+        "activationEvents": [
+          {
+            "kind": "notebook",
+            "notebook": "contract-notebook"
+          }
+        ],
+        "contributes": {
+          "notebookTypes": [
+            {
+              "id": "contract-notebook",
+              "type": "contract-notebook",
+              "label": "Contract Notebook",
+              "module": "providers/contract-notebook.js",
+              "export": "createContractNotebook",
+              "extensions": [],
+              "filenames": [
+                "notebooks/ContractNotebook"
+              ],
+              "priority": 100
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "notebook-type-extension-lowercase-invalid",
+      "area": "provider",
+      "valid": false,
+      "patch": {
+        "permissions": [
+          "extension.execute"
+        ],
+        "activationEvents": [
+          {
+            "kind": "notebook",
+            "notebook": "contract-notebook"
+          }
+        ],
+        "contributes": {
+          "notebookTypes": [
+            {
+              "id": "contract-notebook",
+              "type": "contract-notebook",
+              "label": "Contract Notebook",
+              "module": "providers/contract-notebook.js",
+              "export": "createContractNotebook",
+              "extensions": [
+                ".IPYNB"
+              ],
+              "filenames": [],
+              "priority": 100
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "notebook-type-association-duplicate-invalid",
+      "area": "provider",
+      "valid": false,
+      "patch": {
+        "permissions": [
+          "extension.execute"
+        ],
+        "activationEvents": [
+          {
+            "kind": "notebook",
+            "notebook": "contract-notebook"
+          }
+        ],
+        "contributes": {
+          "notebookTypes": [
+            {
+              "id": "contract-notebook",
+              "type": "contract-notebook",
+              "label": "Contract Notebook",
+              "module": "providers/contract-notebook.js",
+              "export": "createContractNotebook",
+              "extensions": [
+                ".ipynb",
+                ".ipynb"
+              ],
+              "filenames": [],
+              "priority": 100
+            }
+          ]
+        }
+      }
+    },
+    {
       "id": "runtime-notebook-kernel-valid",
       "area": "runtime",
       "valid": true,
