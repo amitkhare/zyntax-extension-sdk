@@ -43,6 +43,31 @@ export const createCompletionProvider = defineCompletionProvider(
 Manifest validation remains host/tooling-owned. The SDK does not grant
 permissions or platform access.
 
+## Language filename associations
+
+A contributed editor language always declares `extensions` and may also declare
+exact `filenames` or basename-only `filenamePrefixes`. Prefix matching is
+case-insensitive. Each prefix must be non-empty and contain no `/` or `\` path
+separator; the host canonicalizes prefixes before matching.
+
+When several associations match, the host chooses an exact filename first, then
+the longest matching filename prefix, then the longest matching compound
+extension. This lets a language claim a filename family such as `Dockerfile.*`
+without enumerating every basename.
+
+```json
+{
+  "contributes": {
+    "languages": [{
+      "id": "dockerfile",
+      "extensions": [],
+      "filenames": ["Dockerfile"],
+      "filenamePrefixes": ["Dockerfile."]
+    }]
+  }
+}
+```
+
 ## Notebook file associations
 
 Every contributed notebook type explicitly declares both `extensions` and

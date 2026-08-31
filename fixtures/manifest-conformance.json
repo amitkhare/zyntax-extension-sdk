@@ -1011,6 +1011,63 @@
       }
     },
     {
+      "id": "language-filename-prefix-valid",
+      "area": "language",
+      "valid": true,
+      "patch": {
+        "contributes": {
+          "languages": [
+            {
+              "id": "dockerfile",
+              "extensions": [],
+              "filenames": [
+                "Dockerfile"
+              ],
+              "filenamePrefixes": [
+                "Dockerfile."
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "language-filename-prefix-empty-invalid",
+      "area": "language",
+      "valid": false,
+      "patch": {
+        "contributes": {
+          "languages": [
+            {
+              "id": "dockerfile",
+              "extensions": [],
+              "filenamePrefixes": [
+                ""
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "language-filename-prefix-path-invalid",
+      "area": "language",
+      "valid": false,
+      "patch": {
+        "contributes": {
+          "languages": [
+            {
+              "id": "dockerfile",
+              "extensions": [],
+              "filenamePrefixes": [
+                "containers/Dockerfile."
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
       "id": "activation-invalid",
       "area": "activation",
       "valid": false,

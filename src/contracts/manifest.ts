@@ -162,6 +162,7 @@ export interface ExtensionLanguageContribution {
   id: string;
   extensions: string[];
   filenames?: string[];
+  filenamePrefixes?: string[];
   configuration?: string;
 }
 

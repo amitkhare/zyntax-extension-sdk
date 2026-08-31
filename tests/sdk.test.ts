@@ -67,6 +67,7 @@ import {
   type ExtensionHtmlPreviewPolicy,
   type ExtensionHostTerminalProfileDescriptor,
   type ExtensionIntegration,
+  type ExtensionLanguageContribution,
   type ExtensionTerminalPackageIntent,
   type ExtensionTerminalPackageTransactionReceipt,
   type ExtensionJsonValue,
@@ -106,6 +107,19 @@ describe("public extension SDK", () => {
     expectTypeOf<ExtensionManifest["integrations"]>().toEqualTypeOf<
       ExtensionIntegration[]
     >();
+  });
+
+  it("supports optional language filename-prefix associations", () => {
+    const language: ExtensionLanguageContribution = {
+      id: "dockerfile",
+      extensions: [],
+      filenames: ["Dockerfile"],
+      filenamePrefixes: ["Dockerfile."],
+    };
+
+    expect(language.filenamePrefixes).toEqual(["Dockerfile."]);
+    expectTypeOf<ExtensionLanguageContribution["filenamePrefixes"]>()
+      .toEqualTypeOf<string[] | undefined>();
   });
 
   it("requires explicit notebook file associations", () => {
