@@ -426,9 +426,24 @@ export interface ExtensionRuntimeTaskExecution
   readonly workingDirectory: readonly string[];
 }
 
+/**
+ * A project command executed in a host-owned visible terminal.
+ *
+ * The command is a bare executable name, never a path or shell fragment. The host resolves it
+ * from the user's terminal environment, owns the terminal session and process tree, and applies
+ * cancellation when the task is stopped.
+ */
+export interface ExtensionCommandTaskExecution {
+  readonly kind: "command";
+  readonly command: string;
+  readonly args: readonly string[];
+  readonly workingDirectory: readonly string[];
+}
+
 export type ExtensionTaskExecution =
   | ExtensionManagedToolTaskExecution
-  | ExtensionRuntimeTaskExecution;
+  | ExtensionRuntimeTaskExecution
+  | ExtensionCommandTaskExecution;
 
 export interface ExtensionTaskDescriptor {
   readonly id: string;

@@ -1284,7 +1284,7 @@
       "patch": {
         "permissions": [
           "extension.execute",
-          "tools.execute"
+          "terminal"
         ],
         "activationEvents": [
           {

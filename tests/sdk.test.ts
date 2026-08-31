@@ -86,6 +86,7 @@ import {
   type ExtensionProviderConfigurationValue,
   type ExtensionProjectTemplatePlan,
   type ExtensionProviderActivationContext,
+  type ExtensionCommandTaskExecution,
   type ExtensionManagedToolTaskExecution,
   type ExtensionRuntimeDescriptor,
   type ExtensionRuntimeCommandConfigurationReference,
@@ -276,7 +277,11 @@ describe("public extension SDK", () => {
       "terminalPackage",
       "managedTool",
     ]);
-    expect(EXTENSION_TASK_EXECUTION_KINDS).toEqual(["managedTool", "runtime"]);
+    expect(EXTENSION_TASK_EXECUTION_KINDS).toEqual([
+      "command",
+      "managedTool",
+      "runtime",
+    ]);
     expect(EXTENSION_TASK_CONSOLES).toEqual(["terminal", "captured"]);
     expect(EXTENSION_TERMINAL_PACKAGE_REPOSITORIES).toEqual([
       "zyntax",
@@ -450,8 +455,16 @@ describe("public extension SDK", () => {
       .toEqualTypeOf<"terminal" | "captured">();
     expectTypeOf<ExtensionManagedToolTaskExecution["args"]>()
       .toEqualTypeOf<readonly string[]>();
-    expectTypeOf<Extract<ExtensionTaskExecution, { readonly kind: "terminal" }>>()
-      .toEqualTypeOf<never>();
+    expectTypeOf<Extract<
+      ExtensionTaskExecution,
+      { readonly kind: "command" }
+    >>().toEqualTypeOf<ExtensionCommandTaskExecution>();
+    expectTypeOf<ExtensionCommandTaskExecution>().toEqualTypeOf<{
+      readonly kind: "command";
+      readonly command: string;
+      readonly args: readonly string[];
+      readonly workingDirectory: readonly string[];
+    }>();
     expectTypeOf<ExtensionNotebookKernelDescriptor>().toEqualTypeOf<{
       readonly kind: "runtime";
       readonly executable: ExtensionRuntimeCommandReference;

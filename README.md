@@ -325,7 +325,10 @@ tool and entrypoint, bounded literal arguments, project-relative working-directo
 segments, and a required console mode, and requires `tools.execute`. A `runtime`
 plan references one declared runtime requirement, a symbolic command, bounded
 arguments, project-relative working-directory segments, and a required console
-mode, and requires `runtimes.execute`. The host resolves every
+mode, and requires `runtimes.execute`. A `command` plan contains one bare command
+name, bounded literal arguments, and project-relative working-directory segments,
+and requires `terminal`. The host resolves it from the user's terminal environment
+and owns its visible terminal session and process tree. The host resolves every
 plan only after approval, owns its lifetime and cancellation, and never exposes a
 native path, environment, shell fragment, or process handle to the provider. Terminal-profile
 and project-template providers likewise return descriptors or host-reviewed plans

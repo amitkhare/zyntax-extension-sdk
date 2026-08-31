@@ -35,6 +35,7 @@ export declare const EXTENSION_RUNTIME_SOURCE_KINDS: readonly [
   "managedTool",
 ];
 export declare const EXTENSION_TASK_EXECUTION_KINDS: readonly [
+  "command",
   "managedTool",
   "runtime",
 ];

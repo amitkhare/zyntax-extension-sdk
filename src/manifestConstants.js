@@ -44,6 +44,7 @@ export const EXTENSION_RUNTIME_SOURCE_KINDS = Object.freeze([
 
 /** Canonical reviewed task execution and console routes. */
 export const EXTENSION_TASK_EXECUTION_KINDS = Object.freeze([
+  "command",
   "managedTool",
   "runtime",
 ]);
