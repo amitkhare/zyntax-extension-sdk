@@ -101,6 +101,9 @@ import {
   type ExtensionTextMateGrammarContribution,
   type ExtensionWorkspaceFile,
   type ExtensionWorkspaceFileQuery,
+  type ManagedToolEntrypoint,
+  type ManagedToolEntrypointArgument,
+  type ManagedToolEntrypointRunner,
 } from "../src/index.js";
 
 describe("public extension SDK", () => {
@@ -108,6 +111,41 @@ describe("public extension SDK", () => {
     expectTypeOf<ExtensionManifest["integrations"]>().toEqualTypeOf<
       ExtensionIntegration[]
     >();
+  });
+
+  it("types signed managed-tool entrypoint static arguments without host paths", () => {
+    const entrypoint: ManagedToolEntrypoint = {
+      id: "adapter",
+      path: "payload/server/adapter.mjs",
+      runner: { tool: "zyntax.node", entrypoint: "node" },
+      args: [
+        "--runtime",
+        {
+          $toolResource: {
+            tool: "zyntax.contract-runtime",
+            resource: "contract-command",
+          },
+        },
+      ],
+    };
+    const withoutStaticArguments: ManagedToolEntrypoint = {
+      id: "health",
+      path: "payload/server/health.mjs",
+    };
+
+    expect(entrypoint.args).toHaveLength(2);
+    expect(withoutStaticArguments.args).toBeUndefined();
+    expectTypeOf<ManagedToolEntrypoint>().toEqualTypeOf<{
+      readonly id: string;
+      readonly path: string;
+      readonly runner?: ManagedToolEntrypointRunner;
+      readonly args?: readonly ManagedToolEntrypointArgument[];
+    }>();
+    expectTypeOf<ManagedToolEntrypointArgument>()
+      .toEqualTypeOf<string | ExtensionToolResourceReference>();
+    expectTypeOf<
+      "environment" extends keyof ManagedToolEntrypoint ? true : false
+    >().toEqualTypeOf<false>();
   });
 
   it("supports optional language filename-prefix associations", () => {

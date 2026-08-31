@@ -396,6 +396,16 @@ resolution. Manifests never declare `NODE_PATH`, installation directories, or
 package-specific host behavior; each resource package must carry a matching
 `package.json` name.
 
+A signed managed-tool `tool.json` entrypoint may also declare non-empty static
+`args`. Each value is either a bounded literal string or the same
+`$toolResource` reference, restricted to a direct managed-tool dependency. The
+host resolves these static arguments immediately before launch and places them
+before invocation arguments. Omit `args` when there are no static arguments;
+an empty array is not a second canonical representation. This gives an adapter
+an exact signed dependency resource through ordinary process arguments without
+declaring an installation path, environment variable, shell fragment, or host
+filesystem layout.
+
 Managed document formatters declare their exact stdio protocol. Use
 `framed-jsonrpc` for an adapter that implements the canonical formatting RPC, or
 `raw-stdio` for a direct CLI which accepts the exact document bytes on stdin and

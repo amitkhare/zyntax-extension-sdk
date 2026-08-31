@@ -68,7 +68,12 @@
           }
         ]
       },
-      "resources": [],
+      "resources": [
+        {
+          "id": "contract-command",
+          "path": "payload/runtime/bin/contract-runtime"
+        }
+      ],
       "probes": [
         {
           "capability": "runtime.contract",
@@ -97,7 +102,21 @@
         "language-server.lsp-stdio",
         "service.persistent"
       ],
-      "dependencies": [],
+      "dependencies": [
+        {
+          "id": "zyntax.contract-runtime",
+          "version": "1.0.0",
+          "platforms": [
+            {
+              "os": "android",
+              "architecture": "arm64-v8a"
+            }
+          ],
+          "capabilities": [
+            "runtime.contract"
+          ]
+        }
+      ],
       "runtimeRoot": "payload/bin",
       "source": {
         "kind": "store"
@@ -110,7 +129,16 @@
       "entrypoints": [
         {
           "id": "lsp",
-          "path": "payload/bin/contract-language-server"
+          "path": "payload/bin/contract-language-server",
+          "args": [
+            "--contract-runtime",
+            {
+              "$toolResource": {
+                "tool": "zyntax.contract-runtime",
+                "resource": "contract-command"
+              }
+            }
+          ]
         }
       ],
       "resources": [
