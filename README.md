@@ -371,6 +371,28 @@ Language-server mappings declare only verified routes. Position routes are
 routes parser-owned source or virtual coordinates; it never infers a claim from
 the server, language, filename, or installed package.
 
+A language-server contribution may declare `projectFiles`, a non-empty list of
+at most `EXTENSION_LSP_MAX_PROJECT_FILES` (32) distinct project-relative file paths.
+The server is eligible when **any** listed path is an actual regular file in the
+open project. Matching is exact and case-sensitive, uses the current filesystem
+rather than unsaved editor buffers, and is re-evaluated when the project or those
+files change. No directory scan or glob matching is performed. Omitting
+`projectFiles` makes the server unconditional.
+
+`isExtensionProjectFilePath` validates the shared path syntax. Paths use forward
+slashes and contain at most `EXTENSION_LSP_MAX_PROJECT_FILE_LENGTH` (384) UTF-16
+code units. Unicode and interior spaces are allowed; absolute paths, empty,
+`.` or `..` segments, surrounding segment whitespace, control characters,
+backslashes, colons, and glob characters (`*?[]{}`) are rejected. Conditions
+never authorize access outside the open project.
+
+Eligible servers retain their declared language priority. At equal priority, a
+matching project-conditioned exclusive server takes precedence over an
+unconditional exclusive server. Equal priority and equal project specificity
+remain an explicit conflict; additive servers remain additive. Catalog default
+language recommendations consider only unconditional servers, since a catalog
+has no project context.
+
 Declarative TextMate contributions reference exact UTF-8 JSON
 (`syntaxes/*.tmLanguage.json`) or XML plist (`syntaxes/*.tmLanguage`) assets. The
 host validates and loads the declared format directly; extensions do not convert

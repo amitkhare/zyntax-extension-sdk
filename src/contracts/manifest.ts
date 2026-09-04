@@ -22,6 +22,8 @@ import {
   EXTENSION_LSP_EXCLUSIVE_CAPABILITIES,
   EXTENSION_LSP_POSITION_CAPABILITIES,
   EXTENSION_LSP_STANDARD_CLIENT_REQUESTS,
+  EXTENSION_LSP_MAX_PROJECT_FILES,
+  EXTENSION_LSP_MAX_PROJECT_FILE_LENGTH,
   EXTENSION_PERMISSIONS,
   EXTENSION_DEVELOPMENT_STACK_MAX_CONTRIBUTIONS,
   EXTENSION_DEVELOPMENT_STACK_MAX_DESCRIPTION_LENGTH,
@@ -37,6 +39,7 @@ import {
   EXTENSION_TERMINAL_PACKAGE_MAX_SYMBOL_LENGTH,
   EXTENSION_TERMINAL_PACKAGE_REPOSITORIES,
   isExtensionExecutionArgument,
+  isExtensionProjectFilePath,
 } from "../manifestConstants.js";
 
 export type { ExtensionJsonObject, ExtensionJsonValue } from "./json.js";
@@ -56,6 +59,8 @@ export {
   EXTENSION_LSP_EXCLUSIVE_CAPABILITIES,
   EXTENSION_LSP_POSITION_CAPABILITIES,
   EXTENSION_LSP_STANDARD_CLIENT_REQUESTS,
+  EXTENSION_LSP_MAX_PROJECT_FILES,
+  EXTENSION_LSP_MAX_PROJECT_FILE_LENGTH,
   EXTENSION_PERMISSIONS,
   EXTENSION_DEVELOPMENT_STACK_MAX_CONTRIBUTIONS,
   EXTENSION_DEVELOPMENT_STACK_MAX_DESCRIPTION_LENGTH,
@@ -71,6 +76,7 @@ export {
   EXTENSION_TERMINAL_PACKAGE_MAX_SYMBOL_LENGTH,
   EXTENSION_TERMINAL_PACKAGE_REPOSITORIES,
   isExtensionExecutionArgument,
+  isExtensionProjectFilePath,
 };
 
 export type ExtensionPermission = (typeof EXTENSION_PERMISSIONS)[number];
@@ -304,6 +310,8 @@ export interface ExtensionLanguageServerContribution {
   id: string;
   execution: ManagedToolExecution;
   languages: ExtensionLanguageServerMapping[];
+  /** Any matching regular file enables this server; omitted means unconditional. */
+  projectFiles?: readonly string[];
   initializationOptions?: ExtensionJsonValue;
   workspaceConfiguration?: ExtensionJsonObject;
   requestTimeoutMs: number;

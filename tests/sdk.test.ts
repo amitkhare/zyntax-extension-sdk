@@ -15,6 +15,8 @@ import {
   EXTENSION_LSP_DOCUMENT_CAPABILITIES,
   EXTENSION_LSP_EXCLUSIVE_CAPABILITIES,
   EXTENSION_LSP_POSITION_CAPABILITIES,
+  EXTENSION_LSP_MAX_PROJECT_FILES,
+  EXTENSION_LSP_MAX_PROJECT_FILE_LENGTH,
   EXTENSION_MANAGED_TOOL_INVOCATION_METHOD,
   EXTENSION_MANAGED_TOOL_JSON_RPC_VERSION,
   EXTENSION_MANAGED_TOOL_MAX_FRAME_BYTES,
@@ -59,6 +61,7 @@ import {
   defineStructuralRegionProvider,
   extensionJsonUtf8ByteLength,
   isExtensionExecutionArgument,
+  isExtensionProjectFilePath,
   isExtensionRuntimeCommandConfigurationReference,
   isExtensionRuntimeCommandReference,
   isExtensionRuntimeRequirementSources,
@@ -79,6 +82,7 @@ import {
   type ExtensionTerminalPackageTransactionReceipt,
   type ExtensionJsonValue,
   type ExtensionLanguageServerCapabilityMatrix,
+  type ExtensionLanguageServerContribution,
   type ExtensionManifest,
   type ExtensionNetworkRequest,
   type ExtensionNotebookExecutionRequest,
@@ -123,6 +127,22 @@ import {
 } from "../src/index.js";
 
 describe("public extension SDK", () => {
+  it("validates exact project-file conditions without scanning or case folding", () => {
+    for (const { path, valid } of fixture.languageServerProjectFiles.cases) {
+      expect(isExtensionProjectFilePath(path), path).toBe(valid);
+    }
+    expect(EXTENSION_LSP_MAX_PROJECT_FILES).toBe(32);
+    expect(EXTENSION_LSP_MAX_PROJECT_FILE_LENGTH).toBe(384);
+    expect(isExtensionProjectFilePath("配".repeat(384))).toBe(true);
+    expect(isExtensionProjectFilePath("配".repeat(385))).toBe(false);
+    for (const invalid of [null, 42, true, "project\n.json", "project\u007f.json"]) {
+      expect(isExtensionProjectFilePath(invalid)).toBe(false);
+    }
+    expectTypeOf<ExtensionLanguageServerContribution["projectFiles"]>().toEqualTypeOf<
+      readonly string[] | undefined
+    >();
+  });
+
   it("validates exact managed-tool path syntax without case folding", () => {
     for (const { path, valid } of fixture.managedToolPaths.cases) {
       expect(isManagedToolPath(path), path).toBe(valid);

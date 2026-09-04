@@ -77,6 +77,10 @@ export declare const EXTENSION_LSP_STANDARD_CLIENT_REQUESTS: readonly [
 ];
 export declare function isExtensionExecutionArgument(value: unknown): value is string;
 
+export declare const EXTENSION_LSP_MAX_PROJECT_FILES: 32;
+export declare const EXTENSION_LSP_MAX_PROJECT_FILE_LENGTH: 384;
+export declare function isExtensionProjectFilePath(value: unknown): value is string;
+
 export declare const EXTENSION_PROVIDER_KINDS: readonly [
   "completion",
   "structuralRegions",

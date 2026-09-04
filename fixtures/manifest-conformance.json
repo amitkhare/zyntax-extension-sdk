@@ -1,6 +1,29 @@
 {
   "formatVersion": 1,
   "hostVersion": "0.9.0",
+  "languageServerProjectFiles": {
+    "cases": [
+      { "path": "project.json", "valid": true },
+      { "path": ".config/language.json", "valid": true },
+      { "path": "配置/project config.json", "valid": true },
+      { "path": "Project.json", "valid": true },
+      { "path": "", "valid": false },
+      { "path": "/project.json", "valid": false },
+      { "path": "../project.json", "valid": false },
+      { "path": "./project.json", "valid": false },
+      { "path": "config//project.json", "valid": false },
+      { "path": "config/", "valid": false },
+      { "path": "config\\project.json", "valid": false },
+      { "path": "file:project.json", "valid": false },
+      { "path": "config/ project.json", "valid": false },
+      { "path": "config/project.json ", "valid": false },
+      { "path": "config/*.json", "valid": false },
+      { "path": "config/?.json", "valid": false },
+      { "path": "config/[a].json", "valid": false },
+      { "path": "config/{a,b}.json", "valid": false },
+      { "path": "config/\u0000project.json", "valid": false }
+    ]
+  },
   "managedToolPaths": {
     "cases": [
       { "path": "payload/include/Name.h", "valid": true },
@@ -1484,6 +1507,7 @@
           "languageServers": [
             {
               "id": "contract-server",
+              "projectFiles": ["project.json", ".config/language.json"],
               "execution": {
                 "tool": "zyntax.contract-tool",
                 "entrypoint": "lsp",

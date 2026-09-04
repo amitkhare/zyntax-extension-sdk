@@ -91,6 +91,23 @@ export const EXTENSION_LSP_STANDARD_CLIENT_REQUESTS = Object.freeze([
   "workspace/applyEdit",
 ]);
 
+/** Bounds for exact project-file conditions on a language-server contribution. */
+export const EXTENSION_LSP_MAX_PROJECT_FILES = 32;
+export const EXTENSION_LSP_MAX_PROJECT_FILE_LENGTH = 384;
+
+/** Validate one normalized, case-sensitive project-relative file path. */
+export function isExtensionProjectFilePath(value) {
+  return typeof value === "string"
+    && value.length > 0
+    && value.length <= EXTENSION_LSP_MAX_PROJECT_FILE_LENGTH
+    && !/[\u0000-\u001f\u007f-\u009f\\:*?\[\]{}]/u.test(value)
+    && value.split("/").every((segment) =>
+      segment.length > 0
+      && segment !== "."
+      && segment !== ".."
+      && segment.trim() === segment);
+}
+
 /** Matches Java's Character.isISOControl contract used by the native authority. */
 const EXTENSION_EXECUTION_ARGUMENT_CONTROL = /[\u0000-\u001f\u007f-\u009f]/u;
 
