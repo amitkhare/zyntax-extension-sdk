@@ -1,7 +1,13 @@
 /** Required public provider methods, keyed by the canonical capability kind. */
 export const EXTENSION_PROVIDER_METHODS = Object.freeze({
   completion: Object.freeze(["provideCompletions"]),
-  structuralRegions: Object.freeze(["provideRegions"]),
+  structuralRegions: Object.freeze([
+    "openDocument",
+    "applyDocumentChanges",
+    "provideRegion",
+    "provideRegionDocument",
+    "closeDocument",
+  ]),
   virtualDocuments: Object.freeze(["provideVirtualDocuments"]),
   documentParser: Object.freeze(["parseDocument"]),
   documentFormatting: Object.freeze(["provideDocumentFormatting"]),

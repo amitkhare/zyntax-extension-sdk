@@ -2,7 +2,13 @@ import type { ExtensionProviderKind } from "./contracts/manifest.js";
 
 export const EXTENSION_PROVIDER_METHODS: Readonly<{
   readonly completion: readonly ["provideCompletions"];
-  readonly structuralRegions: readonly ["provideRegions"];
+  readonly structuralRegions: readonly [
+    "openDocument",
+    "applyDocumentChanges",
+    "provideRegion",
+    "provideRegionDocument",
+    "closeDocument",
+  ];
   readonly virtualDocuments: readonly ["provideVirtualDocuments"];
   readonly documentParser: readonly ["parseDocument"];
   readonly documentFormatting: readonly ["provideDocumentFormatting"];

@@ -298,6 +298,39 @@ the extension boundary. If an installation changes, its fingerprint changes
 and the global selection becomes explicitly unavailable until the user selects
 the current candidate.
 
+## Incremental structural documents
+
+A structural-region provider owns incremental parser state for each source
+document that the host opens. `openDocument` receives an opaque, non-empty
+`documentId` and the only complete source-text snapshot transferred for that
+document generation. The provider retains the corresponding text and parser
+state.
+
+The host serializes lifecycle calls for each `documentId`.
+`applyDocumentChanges` advances the open document from `baseVersion` to exactly
+`baseVersion + 1` without changing its generation. Its changes are ordered,
+non-overlapping UTF-16 ranges in the base revision, and every range in the batch
+uses that same coordinate space. Lifecycle mutations commit atomically. The host
+does not cancel them during ordinary editing; cancellation is reserved for
+teardown. A generation change closes the old document and opens a new identity
+with a fresh source snapshot.
+
+Each successful open or change acknowledges the exact `documentId`, version,
+and generation that was committed. `provideRegion` asynchronously returns the
+validated root-to-owner path for one position and association.
+`provideRegionDocument` asynchronously returns the complete region document
+when a document-wide consumer needs it. Both target an exact version and
+generation, and both results echo the `documentId`, source URI, version,
+generation, and provider id so the host can reject stale or cross-document
+output. The host cancels superseded queries and retains only the latest result;
+implementations must yield cooperatively and observe the cancellation token
+while preparing structure.
+
+`closeDocument` is required and idempotent. It echoes the released
+`documentId`; disposing the provider releases every still-open document. The
+contract has no stateless `provideRegions(snapshot)` method or compatibility
+alias.
+
 Language-server mappings declare only verified routes. Position routes are
 `completion`, `hover`, `signatureHelp`, `definition`, `implementation`,
 `typeDefinition`, `references`, `rename`, `codeActions`, `typeHierarchy`, and

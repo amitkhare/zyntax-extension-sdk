@@ -1113,6 +1113,62 @@
       }
     },
     {
+      "id": "structural-provider-valid",
+      "area": "provider",
+      "valid": true,
+      "patch": {
+        "permissions": [
+          "extension.execute"
+        ],
+        "activationEvents": [
+          {
+            "kind": "provider",
+            "providerKind": "structuralRegions",
+            "provider": "regions"
+          }
+        ],
+        "contributes": {
+          "structuralRegions": [
+            {
+              "id": "regions",
+              "module": "providers/regions.js",
+              "export": "createRegions",
+              "languages": [
+                "contract"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "structural-provider-empty-languages-invalid",
+      "area": "provider",
+      "valid": false,
+      "patch": {
+        "permissions": [
+          "extension.execute"
+        ],
+        "activationEvents": [
+          {
+            "kind": "provider",
+            "providerKind": "structuralRegions",
+            "provider": "regions"
+          }
+        ],
+        "contributes": {
+          "structuralRegions": [
+            {
+              "id": "regions",
+              "module": "providers/regions.js",
+              "export": "createRegions",
+              "languages": []
+            }
+          ]
+        }
+      }
+    },
+    {
       "id": "provider-valid",
       "area": "provider",
       "valid": true,

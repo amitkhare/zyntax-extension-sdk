@@ -52,6 +52,7 @@ import {
   defineProviderModule,
   definePreviewProvider,
   defineProjectTemplateProvider,
+  defineStructuralRegionProvider,
   extensionJsonUtf8ByteLength,
   isExtensionExecutionArgument,
   isExtensionRuntimeCommandConfigurationReference,
@@ -96,6 +97,14 @@ import {
   type ExtensionRuntimeRequirementSources,
   type ExtensionRuntimeSelection,
   type ExtensionRuntimeTaskExecution,
+  type ExtensionStructuralDocumentChangeRequest,
+  type ExtensionStructuralDocumentCloseResult,
+  type ExtensionStructuralDocumentOpenRequest,
+  type ExtensionStructuralDocumentRequest,
+  type ExtensionStructuralDocumentSynchronizationResult,
+  type ExtensionStructuralRegionPositionRequest,
+  type ExtensionStructuralRegionPositionResult,
+  type ExtensionStructuralRegionProvider,
   type ExtensionToolResourceReference,
   type ExtensionTaskExecution,
   type ExtensionTextMateGrammarContribution,
@@ -389,6 +398,13 @@ describe("public extension SDK", () => {
       "provideDocumentColors",
       "provideColorPresentations",
     ]);
+    expect(EXTENSION_PROVIDER_METHODS.structuralRegions).toEqual([
+      "openDocument",
+      "applyDocumentChanges",
+      "provideRegion",
+      "provideRegionDocument",
+      "closeDocument",
+    ]);
     expect(EXTENSION_PROVIDER_METHODS.hover).toEqual(["provideHover"]);
     expect(EXTENSION_PROVIDER_METHODS.assistedEdit).toEqual([
       "provideAssistedEdits",
@@ -666,6 +682,38 @@ describe("public extension SDK", () => {
     }));
     expect(defineCompletionProvider(factory)).toBe(factory);
     expectTypeOf(defineCompletionProvider(factory)).toEqualTypeOf(factory);
+    const structural = vi.fn((): ExtensionStructuralRegionProvider => ({
+      openDocument: (request) => ({
+        documentId: request.documentId,
+        version: request.snapshot.version,
+        generation: request.snapshot.generation,
+      }),
+      applyDocumentChanges: (request) => ({
+        documentId: request.documentId,
+        version: request.version,
+        generation: request.generation,
+      }),
+      provideRegion: async (request) => ({
+        documentId: request.documentId,
+        sourceUri: "file:///project/source.contract",
+        sourceVersion: request.version,
+        sourceGeneration: request.generation,
+        providerId: "zyntax.contract-fixture/regions",
+        path: [],
+      }),
+      provideRegionDocument: async (request) => ({
+        documentId: request.documentId,
+        sourceUri: "file:///project/source.contract",
+        sourceVersion: request.version,
+        sourceGeneration: request.generation,
+        providerId: "zyntax.contract-fixture/regions",
+        regions: [],
+      }),
+      closeDocument: (request) => ({ documentId: request.documentId }),
+      dispose() {},
+    }));
+    expect(defineStructuralRegionProvider(structural)).toBe(structural);
+    expectTypeOf(defineStructuralRegionProvider(structural)).toEqualTypeOf(structural);
     const previews = vi.fn((): ExtensionPreviewProvider => ({
       providePreview: (request: ExtensionPreviewRequest) => ({
         documentVersion: request.snapshot.version,
@@ -721,6 +769,69 @@ describe("public extension SDK", () => {
           readonly metadata: Record<string, ExtensionJsonValue>;
         }
     >();
+  });
+
+  it("defines a source-only incremental structural document lifecycle", () => {
+    expectTypeOf<ExtensionStructuralDocumentOpenRequest>().toEqualTypeOf<{
+      readonly documentId: string;
+      readonly snapshot: {
+        readonly uri: string;
+        readonly languageId: string;
+        readonly content: string;
+        readonly version: number;
+        readonly generation: number;
+        readonly coordinateSpace: {
+          readonly kind: "source";
+          readonly id: string;
+          readonly ownerId: string;
+        };
+      };
+    }>();
+    expectTypeOf<ExtensionStructuralDocumentChangeRequest>().toEqualTypeOf<{
+      readonly documentId: string;
+      readonly baseVersion: number;
+      readonly version: number;
+      readonly generation: number;
+      readonly changes: readonly {
+        readonly from: number;
+        readonly to: number;
+        readonly insert: string;
+      }[];
+    }>();
+    expectTypeOf<ExtensionStructuralDocumentRequest>().toEqualTypeOf<{
+      readonly documentId: string;
+      readonly version: number;
+      readonly generation: number;
+    }>();
+    expectTypeOf<ExtensionStructuralDocumentSynchronizationResult>()
+      .toEqualTypeOf<{
+        readonly documentId: string;
+        readonly version: number;
+        readonly generation: number;
+      }>();
+    expectTypeOf<ExtensionStructuralDocumentCloseResult>().toEqualTypeOf<{
+      readonly documentId: string;
+    }>();
+    expectTypeOf<ExtensionStructuralRegionPositionRequest>().toEqualTypeOf<{
+      readonly documentId: string;
+      readonly version: number;
+      readonly generation: number;
+      readonly position: number;
+      readonly association: "cursor" | "insertion";
+    }>();
+    expectTypeOf<ExtensionStructuralRegionPositionResult>().toMatchTypeOf<{
+      readonly documentId: string;
+      readonly sourceUri: string;
+      readonly sourceVersion: number;
+      readonly sourceGeneration: number;
+      readonly providerId: string;
+      readonly path: readonly unknown[];
+    }>();
+    expectTypeOf<{
+      provideRegions(): unknown;
+      dispose(): void;
+    } extends ExtensionStructuralRegionProvider ? true : false>()
+      .toEqualTypeOf<false>();
   });
 
   it("matches the native provider activation host contract", () => {

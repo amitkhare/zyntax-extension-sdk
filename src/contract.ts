@@ -110,17 +110,35 @@ export class ExtensionDisposableStore implements ExtensionDisposable {
   }
 }
 
+export interface ExtensionDocumentCoordinateSpace {
+  readonly kind: "source" | "virtual";
+  readonly id: string;
+  readonly ownerId: string;
+}
+
+export interface ExtensionSourceDocumentCoordinateSpace
+  extends ExtensionDocumentCoordinateSpace {
+  readonly kind: "source";
+}
+
 export interface ExtensionTextDocumentSnapshot {
   readonly uri: string;
   readonly languageId: string;
   readonly content: string;
   readonly version: number;
   readonly generation: number;
-  readonly coordinateSpace: {
-    readonly kind: "source" | "virtual";
-    readonly id: string;
-    readonly ownerId: string;
-  };
+  readonly coordinateSpace: ExtensionDocumentCoordinateSpace;
+}
+
+/** A host-owned source snapshot used to open one structural document session. */
+export interface ExtensionSourceTextDocumentSnapshot
+  extends Omit<ExtensionTextDocumentSnapshot, "coordinateSpace"> {
+  readonly coordinateSpace: ExtensionSourceDocumentCoordinateSpace;
+}
+
+/** Neutral snapshot request shared by stateless document providers. */
+export interface ExtensionTextDocumentRequest {
+  readonly snapshot: ExtensionTextDocumentSnapshot;
 }
 
 export interface ExtensionOffsetRange {
@@ -147,16 +165,76 @@ export interface ExtensionStructuralRegion {
   };
 }
 
-export interface ExtensionStructuralRegionRequest {
-  readonly snapshot: ExtensionTextDocumentSnapshot;
+/** One UTF-16 text edit. Every edit in a batch addresses the same base revision. */
+export interface ExtensionTextDocumentChange extends ExtensionOffsetRange {
+  readonly insert: string;
+}
+
+/** Opens one host-owned structural document identity with its only full-text transfer. */
+export interface ExtensionStructuralDocumentOpenRequest {
+  readonly documentId: string;
+  readonly snapshot: ExtensionSourceTextDocumentSnapshot;
+}
+
+/** Advances an open structural document by exactly one version in the same generation. */
+export interface ExtensionStructuralDocumentChangeRequest {
+  readonly documentId: string;
+  readonly baseVersion: number;
+  readonly version: number;
+  readonly generation: number;
+  readonly changes: readonly ExtensionTextDocumentChange[];
+}
+
+/** Selects one exact revision of an open structural document. */
+export interface ExtensionStructuralDocumentRequest {
+  readonly documentId: string;
+  readonly version: number;
+  readonly generation: number;
+}
+
+/** How a zero-width position is associated with parser-owned regions. */
+export type ExtensionStructuralPositionAssociation = "cursor" | "insertion";
+
+export interface ExtensionStructuralRegionPositionRequest
+  extends ExtensionStructuralDocumentRequest {
+  readonly position: number;
+  readonly association: ExtensionStructuralPositionAssociation;
+}
+
+/** Closes one structural document identity. Closing an unknown id is idempotent. */
+export interface ExtensionStructuralDocumentCloseRequest {
+  readonly documentId: string;
+}
+
+/** Confirms the exact open revision atomically retained by the provider. */
+export interface ExtensionStructuralDocumentSynchronizationResult {
+  readonly documentId: string;
+  readonly version: number;
+  readonly generation: number;
+}
+
+/** Confirms that the provider released one structural document identity. */
+export interface ExtensionStructuralDocumentCloseResult {
+  readonly documentId: string;
 }
 
 export interface ExtensionStructuralRegionDocument {
+  readonly documentId: string;
   readonly sourceUri: string;
   readonly sourceVersion: number;
   readonly sourceGeneration: number;
   readonly providerId: string;
   readonly regions: readonly ExtensionStructuralRegion[];
+}
+
+/** The validated root-to-owner path for one exact document position. */
+export interface ExtensionStructuralRegionPositionResult {
+  readonly documentId: string;
+  readonly sourceUri: string;
+  readonly sourceVersion: number;
+  readonly sourceGeneration: number;
+  readonly providerId: string;
+  readonly path: readonly ExtensionStructuralRegion[];
 }
 
 export interface ExtensionSourceMapSegment {
@@ -195,7 +273,7 @@ export type ExtensionProviderConfigurationValue =
   | readonly ExtensionProviderConfigurationValue[]
   | { readonly [key: string]: ExtensionProviderConfigurationValue };
 
-export interface ExtensionCompletionRequest extends ExtensionStructuralRegionRequest {
+export interface ExtensionCompletionRequest extends ExtensionTextDocumentRequest {
   readonly position: number;
   readonly region: ExtensionStructuralRegion;
   readonly provider: {
@@ -249,18 +327,56 @@ export interface ExtensionCompletionProvider extends ExtensionDisposable {
 }
 
 export interface ExtensionStructuralRegionProvider extends ExtensionDisposable {
-  provideRegions(
-    request: ExtensionStructuralRegionRequest,
+  /**
+   * Atomically retains the initial source text. The host serializes lifecycle
+   * calls for each document id.
+   */
+  openDocument(
+    request: ExtensionStructuralDocumentOpenRequest,
     cancellation: ExtensionCancellationToken,
   ):
-    | ExtensionStructuralRegionDocument
-    | Promise<ExtensionStructuralRegionDocument>;
+    | ExtensionStructuralDocumentSynchronizationResult
+    | Promise<ExtensionStructuralDocumentSynchronizationResult>;
+  /**
+   * Atomically applies one ordered, non-overlapping UTF-16 change batch.
+   */
+  applyDocumentChanges(
+    request: ExtensionStructuralDocumentChangeRequest,
+    cancellation: ExtensionCancellationToken,
+  ):
+    | ExtensionStructuralDocumentSynchronizationResult
+    | Promise<ExtensionStructuralDocumentSynchronizationResult>;
+  /**
+   * Resolves the root-to-owner path for one position in an exact open revision.
+   * Preparation must cooperatively observe cancellation and publish no partial
+   * or cancelled parser state.
+   */
+  provideRegion(
+    request: ExtensionStructuralRegionPositionRequest,
+    cancellation: ExtensionCancellationToken,
+  ): Promise<ExtensionStructuralRegionPositionResult>;
+  /**
+   * Resolves the complete region document for an exact open revision.
+   * Preparation must cooperatively observe cancellation and publish no partial
+   * or cancelled parser state.
+   */
+  provideRegionDocument(
+    request: ExtensionStructuralDocumentRequest,
+    cancellation: ExtensionCancellationToken,
+  ): Promise<ExtensionStructuralRegionDocument>;
+  /** Releases one document's retained text and parser state. Must be idempotent. */
+  closeDocument(
+    request: ExtensionStructuralDocumentCloseRequest,
+    cancellation: ExtensionCancellationToken,
+  ):
+    | ExtensionStructuralDocumentCloseResult
+    | Promise<ExtensionStructuralDocumentCloseResult>;
   dispose(): void | Promise<void>;
 }
 
 export interface ExtensionVirtualDocumentProvider extends ExtensionDisposable {
   provideVirtualDocuments(
-    request: ExtensionStructuralRegionRequest,
+    request: ExtensionTextDocumentRequest,
     cancellation: ExtensionCancellationToken,
   ): readonly ExtensionVirtualDocument[] | Promise<readonly ExtensionVirtualDocument[]>;
   dispose(): void | Promise<void>;
