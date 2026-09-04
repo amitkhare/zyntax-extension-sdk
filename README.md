@@ -129,6 +129,21 @@ APK bundle directory; it is not another manifest field or a separate package
 format. Managed-tool schema and archive validation remain owned by the managed
 tooling, which applies the same optional boolean contract to `tool.json`.
 
+Managed-tool package paths use exact case-sensitive POSIX identity on Android.
+`isManagedToolPath` checks the shared path syntax: relative forward-slash paths,
+printable ASCII, at most `MANAGED_TOOL_MAX_PATH_BYTES` (384) bytes overall and
+`MANAGED_TOOL_MAX_PATH_SEGMENT_BYTES` (96) bytes per segment. Empty, `.` and `..`
+segments, surrounding spaces, trailing dots, and `<>:"\\|?*` are rejected. Paths
+are never lowercased or rewritten. `payload/include/Name.h` and
+`payload/include/name.h` are distinct files, as are case-distinct directories.
+Payloads containing case-distinct names require a case-sensitive build filesystem,
+such as a Linux container, so staging preserves both names.
+
+Builders and installers still reject exact duplicate paths, file/directory/link
+conflicts, unsafe paths, and links outside the declared package graph. Archive
+metadata remains at the package root; tool files and resources remain under
+`payload/`. This does not change extension archive paths or manifest version 1.
+
 ## Notebook kernels
 
 A notebook-kernel provider returns only a symbolic runtime descriptor. Its

@@ -1,4 +1,5 @@
 import { describe, expect, expectTypeOf, it, vi } from "vitest";
+import fixture from "../fixtures/manifest-conformance.json" with { type: "json" };
 
 import {
   EXTENSION_API_VERSION,
@@ -20,6 +21,8 @@ import {
   EXTENSION_MANAGED_TOOL_MAX_REQUEST_BYTES,
   EXTENSION_MANAGED_TOOL_MAX_RESULT_BYTES,
   MANAGED_TOOL_PROBE_MAX_STDIN_BYTES,
+  MANAGED_TOOL_MAX_PATH_BYTES,
+  MANAGED_TOOL_MAX_PATH_SEGMENT_BYTES,
   EXTENSION_NOTEBOOK_KERNEL_CANCEL_METHOD,
   EXTENSION_NOTEBOOK_KERNEL_COMM_METHOD,
   EXTENSION_NOTEBOOK_KERNEL_EVENT_METHOD,
@@ -59,6 +62,7 @@ import {
   isExtensionRuntimeCommandConfigurationReference,
   isExtensionRuntimeCommandReference,
   isExtensionRuntimeRequirementSources,
+  isManagedToolPath,
   throwIfCancellationRequested,
   type ExtensionCompletionProvider,
   type ExtensionCancellationToken,
@@ -119,6 +123,21 @@ import {
 } from "../src/index.js";
 
 describe("public extension SDK", () => {
+  it("validates exact managed-tool path syntax without case folding", () => {
+    for (const { path, valid } of fixture.managedToolPaths.cases) {
+      expect(isManagedToolPath(path), path).toBe(valid);
+    }
+    expect(MANAGED_TOOL_MAX_PATH_BYTES).toBe(384);
+    expect(MANAGED_TOOL_MAX_PATH_SEGMENT_BYTES).toBe(96);
+    const longestPath = [...Array(3).fill("a".repeat(96)), "b".repeat(93)].join("/");
+    expect(isManagedToolPath(longestPath)).toBe(true);
+    expect(isManagedToolPath(`${longestPath}b`)).toBe(false);
+    expect(isManagedToolPath(`payload/${"a".repeat(97)}`)).toBe(false);
+    for (const invalid of [null, 42, true, "", "payload/\u0000name", "payload/\nname"]) {
+      expect(isManagedToolPath(invalid)).toBe(false);
+    }
+  });
+
   it("separates installed dependencies from non-installing integrations", () => {
     expectTypeOf<ExtensionManifest["integrations"]>().toEqualTypeOf<
       ExtensionIntegration[]

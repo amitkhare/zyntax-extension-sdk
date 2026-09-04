@@ -1,6 +1,6 @@
 {
   "name": "@zyntax/extension-sdk",
-  "version": "1.0.18",
+  "version": "1.0.19",
   "description": "Canonical public contracts and authoring helpers for Zyntax extensions.",
   "author": "amitkhare",
   "type": "module",

@@ -1,6 +1,24 @@
 {
   "formatVersion": 1,
   "hostVersion": "0.9.0",
+  "managedToolPaths": {
+    "cases": [
+      { "path": "payload/include/Name.h", "valid": true },
+      { "path": "payload/include/name.h", "valid": true },
+      { "path": "payload/src/Case/file name.txt", "valid": true },
+      { "path": "payload/../../outside", "valid": false },
+      { "path": "payload/./file", "valid": false },
+      { "path": "/payload/file", "valid": false },
+      { "path": "payload//file", "valid": false },
+      { "path": "payload/file/", "valid": false },
+      { "path": "payload\\file", "valid": false },
+      { "path": "payload/ file", "valid": false },
+      { "path": "payload/file ", "valid": false },
+      { "path": "payload/file.", "valid": false },
+      { "path": "payload/file:name", "valid": false },
+      { "path": "payload/naïve", "valid": false }
+    ]
+  },
   "baseManifest": {
     "manifestVersion": 1,
     "id": "zyntax.contract-fixture",
