@@ -1,5 +1,8 @@
 import type { ExtensionManagedToolArgument } from "./manifest.js";
 
+/** Maximum UTF-8 input accepted by one managed-tool probe. */
+export const MANAGED_TOOL_PROBE_MAX_STDIN_BYTES = 65_536 as const;
+
 /** Static literal or signed dependency resource supplied to a managed tool. */
 export type ManagedToolEntrypointArgument = ExtensionManagedToolArgument;
 
@@ -21,4 +24,16 @@ export interface ManagedToolEntrypoint {
   readonly path: string;
   readonly runner?: ManagedToolEntrypointRunner;
   readonly args?: readonly ManagedToolEntrypointArgument[];
+}
+
+/** One bounded capability probe for a signed managed-tool entrypoint. */
+export interface ManagedToolProbe {
+  readonly capability: string;
+  readonly entrypoint: string;
+  readonly args: readonly string[];
+  /** Exact non-empty UTF-8 input written before the host closes stdin. */
+  readonly stdin?: string;
+  readonly timeoutMs: number;
+  readonly maxOutputBytes: number;
+  readonly expectedStdout: string;
 }

@@ -19,6 +19,7 @@ import {
   EXTENSION_MANAGED_TOOL_MAX_FRAME_BYTES,
   EXTENSION_MANAGED_TOOL_MAX_REQUEST_BYTES,
   EXTENSION_MANAGED_TOOL_MAX_RESULT_BYTES,
+  MANAGED_TOOL_PROBE_MAX_STDIN_BYTES,
   EXTENSION_NOTEBOOK_KERNEL_CANCEL_METHOD,
   EXTENSION_NOTEBOOK_KERNEL_COMM_METHOD,
   EXTENSION_NOTEBOOK_KERNEL_EVENT_METHOD,
@@ -114,6 +115,7 @@ import {
   type ManagedToolEntrypoint,
   type ManagedToolEntrypointArgument,
   type ManagedToolEntrypointRunner,
+  type ManagedToolProbe,
 } from "../src/index.js";
 
 describe("public extension SDK", () => {
@@ -156,6 +158,39 @@ describe("public extension SDK", () => {
     expectTypeOf<
       "environment" extends keyof ManagedToolEntrypoint ? true : false
     >().toEqualTypeOf<false>();
+  });
+
+  it("types one bounded managed-tool probe input contract", () => {
+    const probe: ManagedToolProbe = {
+      capability: "language-server.lsp-stdio",
+      entrypoint: "lsp",
+      args: ["--stdio"],
+      stdin: "Content-Length: 2\r\n\r\n{}",
+      timeoutMs: 1_000,
+      maxOutputBytes: 4_096,
+      expectedStdout: "",
+    };
+    const withoutInput: ManagedToolProbe = {
+      capability: "formatter.document",
+      entrypoint: "formatter",
+      args: ["--version"],
+      timeoutMs: 1_000,
+      maxOutputBytes: 4_096,
+      expectedStdout: "1.0.0\n",
+    };
+
+    expect(MANAGED_TOOL_PROBE_MAX_STDIN_BYTES).toBe(65_536);
+    expect(probe.stdin).toContain("Content-Length");
+    expect(withoutInput.stdin).toBeUndefined();
+    expectTypeOf<ManagedToolProbe>().toEqualTypeOf<{
+      readonly capability: string;
+      readonly entrypoint: string;
+      readonly args: readonly string[];
+      readonly stdin?: string;
+      readonly timeoutMs: number;
+      readonly maxOutputBytes: number;
+      readonly expectedStdout: string;
+    }>();
   });
 
   it("supports optional language filename-prefix associations", () => {

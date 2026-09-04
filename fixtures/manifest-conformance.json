@@ -81,6 +81,7 @@
           "args": [
             "--version"
           ],
+          "stdin": "contract probe\n",
           "timeoutMs": 1000,
           "maxOutputBytes": 4096,
           "expectedStdout": "1.0.0\n"

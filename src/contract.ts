@@ -27,7 +27,7 @@ import type {
 } from "./contracts/runtimes.js";
 
 export type * from "./contracts/manifest.js";
-export type * from "./contracts/managedTools.js";
+export * from "./contracts/managedTools.js";
 export { EXTENSION_PROVIDER_METHODS } from "./providerMethods.js";
 export type { ExtensionProviderMethod } from "./providerMethods.js";
 export {

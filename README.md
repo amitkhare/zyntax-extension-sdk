@@ -455,6 +455,13 @@ an exact signed dependency resource through ordinary process arguments without
 declaring an installation path, environment variable, shell fragment, or host
 filesystem layout.
 
+A managed-tool capability probe may declare non-empty `stdin` containing at most
+`MANAGED_TOOL_PROBE_MAX_STDIN_BYTES` (65,536) UTF-8 bytes. The host writes those
+exact bytes and then closes stdin before it waits for the bounded probe result.
+When `stdin` is omitted, the host closes stdin immediately. This supports
+protocol-aware checks without exposing paths, environments, shell commands, or
+process control to package metadata.
+
 Managed document formatters declare their exact stdio protocol. Use
 `framed-jsonrpc` for an adapter that implements the canonical formatting RPC, or
 `raw-stdio` for a direct CLI which accepts the exact document bytes on stdin and
