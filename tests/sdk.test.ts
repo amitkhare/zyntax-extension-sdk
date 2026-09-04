@@ -60,6 +60,7 @@ import {
   isExtensionRuntimeRequirementSources,
   throwIfCancellationRequested,
   type ExtensionCompletionProvider,
+  type ExtensionCancellationToken,
   type ExtensionAssistedEditProviderContribution,
   type ExtensionHostCapabilityMap,
   type ExtensionHostApi,
@@ -864,13 +865,27 @@ describe("public extension SDK", () => {
     >>>().toEqualTypeOf<ExtensionTerminalPackageTransactionReceipt>();
   });
 
-  it("observes the canonical cancellation token", () => {
+  it("requires the canonical asynchronous cancellation checkpoint", async () => {
     const throwIfCancelled = vi.fn();
-    throwIfCancellationRequested({
+    const checkpoint = vi.fn(async (): Promise<void> => {});
+    const cancellation: ExtensionCancellationToken = {
       isCancellationRequested: false,
       onCancellationRequested: () => ({ dispose() {} }),
       throwIfCancellationRequested: throwIfCancelled,
-    });
+      checkpoint,
+    };
+
+    expectTypeOf(cancellation.checkpoint).returns.toEqualTypeOf<Promise<void>>();
+    expectTypeOf<{
+      readonly isCancellationRequested: boolean;
+      onCancellationRequested(listener: () => void): { dispose(): void };
+      throwIfCancellationRequested(): void;
+    } extends ExtensionCancellationToken ? true : false>()
+      .toEqualTypeOf<false>();
+
+    await cancellation.checkpoint();
+    throwIfCancellationRequested(cancellation);
+    expect(checkpoint).toHaveBeenCalledOnce();
     expect(throwIfCancelled).toHaveBeenCalledOnce();
   });
 });

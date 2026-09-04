@@ -31,8 +31,8 @@ export const extensionApiVersion = EXTENSION_API_VERSION;
 
 export const createCompletionProvider = defineCompletionProvider(
   (): ExtensionCompletionProvider => ({
-    provideCompletions(request, cancellation) {
-      cancellation.throwIfCancellationRequested();
+    async provideCompletions(request, cancellation) {
+      await cancellation.checkpoint();
       return null;
     },
     dispose() {},
@@ -42,6 +42,21 @@ export const createCompletionProvider = defineCompletionProvider(
 
 Manifest validation remains host/tooling-owned. The SDK does not grant
 permissions or platform access.
+
+## Cooperative cancellation
+
+Every provider cancellation token exposes `checkpoint()`. Awaiting it yields
+isolated provider execution to the host event queue so queued cancellation and
+control work can run, then rejects with the same host cancellation error as
+`throwIfCancellationRequested()` when cancellation is requested. CPU-bound
+provider work must await checkpoints at safe intervals; reading
+`isCancellationRequested` or calling `throwIfCancellationRequested()` alone
+does not yield execution to the host.
+
+Providers must not publish partial state from work interrupted by a rejected
+checkpoint. The synchronous token members remain useful before and after
+already-asynchronous boundaries, while `checkpoint()` is the cooperative
+boundary for long-running isolated work.
 
 ## Language filename associations
 
@@ -324,7 +339,8 @@ generation, and both results echo the `documentId`, source URI, version,
 generation, and provider id so the host can reject stale or cross-document
 output. The host cancels superseded queries and retains only the latest result;
 implementations must yield cooperatively and observe the cancellation token
-while preparing structure.
+while preparing structure by awaiting `cancellation.checkpoint()` at safe
+intervals.
 
 `closeDocument` is required and idempotent. It echoes the released
 `documentId`; disposing the provider releases every still-open document. The

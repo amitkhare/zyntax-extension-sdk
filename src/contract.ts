@@ -75,6 +75,12 @@ export interface ExtensionCancellationToken {
   readonly isCancellationRequested: boolean;
   onCancellationRequested(listener: () => void): ExtensionDisposable;
   throwIfCancellationRequested(): void;
+  /**
+   * Yields isolated provider execution to the host event queue before checking
+   * cancellation. The returned promise rejects with the host's cancellation
+   * error when cancellation was requested while queued work was serviced.
+   */
+  checkpoint(): Promise<void>;
 }
 
 /** Ordered push boundary used by provider methods backed by a native stream. */
