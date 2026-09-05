@@ -230,7 +230,13 @@
       "valid": true,
       "patch": {
         "permissions": [
+          "extensions.manage",
+          "files",
           "network",
+          "projects",
+          "secrets",
+          "tasks.execute",
+          "workbench",
           "workspace.read"
         ]
       }
@@ -2054,6 +2060,33 @@
               "icon": "check"
             }
           ]
+        }
+      }
+    },
+    {
+      "id": "workbench-dialog-valid",
+      "area": "workbench",
+      "valid": true,
+      "patch": {
+        "permissions": ["workbench"],
+        "contributes": {
+          "workbench": [{
+            "kind": "panel",
+            "id": "project-panel",
+            "placement": "dialog",
+            "title": "Project",
+            "icon": { "kind": "folder", "path": "project", "root": true },
+            "view": {
+              "kind": "list",
+              "ariaLabel": "Outputs",
+              "items": [{
+                "id": "output",
+                "label": "result.txt",
+                "icon": { "kind": "file", "path": "build/result.txt" },
+                "disabled": true
+              }]
+            }
+          }]
         }
       }
     },

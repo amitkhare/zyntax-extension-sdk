@@ -19,6 +19,8 @@ import type {
   ExtensionRuntimeExecutionBase,
   ExtensionTaskConsole,
 } from "./contracts/runtimes.js";
+import type { ExtensionProjectScope } from "./contracts/projectContexts.js";
+import type { ExtensionTaskArgument, ExtensionTaskInputs } from "./contracts/taskSessions.js";
 
 export type ExtensionInlineCompletionTrigger =
   | { readonly kind: "automatic" }
@@ -411,33 +413,33 @@ export type ExtensionTaskGroup =
  * working-directory segments. The host resolves the executable and working directory after
  * approval and never exposes either native path to the isolated provider.
  */
-export interface ExtensionManagedToolTaskExecution {
+export interface ExtensionTaskProcessOptions {
+  readonly args: readonly ExtensionTaskArgument[];
+  readonly workingDirectory: readonly string[];
+  readonly console: ExtensionTaskConsole;
+  readonly inputs?: ExtensionTaskInputs;
+}
+
+export interface ExtensionManagedToolTaskExecution extends ExtensionTaskProcessOptions {
   readonly kind: "managedTool";
   readonly tool: string;
   readonly entrypoint: string;
-  readonly args: readonly string[];
-  readonly workingDirectory: readonly string[];
-  readonly console: ExtensionTaskConsole;
 }
 
 /** A task executed by the globally selected provider for its runtime requirement. */
 export interface ExtensionRuntimeTaskExecution
-  extends ExtensionRuntimeExecutionBase {
-  readonly workingDirectory: readonly string[];
-}
+  extends Omit<ExtensionRuntimeExecutionBase, "args">, ExtensionTaskProcessOptions {}
 
 /**
- * A project command executed in a host-owned visible terminal.
+ * A project command executed in the user's terminal environment, with a visible PTY or captured output.
  *
  * The command is a bare executable name, never a path or shell fragment. The host resolves it
  * from the user's terminal environment, owns the terminal session and process tree, and applies
  * cancellation when the task is stopped.
  */
-export interface ExtensionCommandTaskExecution {
+export interface ExtensionCommandTaskExecution extends ExtensionTaskProcessOptions {
   readonly kind: "command";
   readonly command: string;
-  readonly args: readonly string[];
-  readonly workingDirectory: readonly string[];
 }
 
 export type ExtensionTaskExecution =
@@ -457,6 +459,7 @@ export interface ExtensionTaskDescriptor {
 }
 
 export interface ExtensionTaskRequest {
+  readonly project: ExtensionProjectScope;
   readonly projectUri: string;
   readonly taskType: string;
 }

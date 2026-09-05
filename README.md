@@ -7,10 +7,9 @@ filesystem, network, native-command, or app-private dependencies.
 
 Extension manifests distinguish required `dependencies` from `integrations`.
 Required dependencies are installed with the extension and must activate.
-Integrations only authorize composition with a compatible package that is
-already installed; they are never installed implicitly and never block the
-declaring extension from activating. Both arrays are explicit in every
-manifest.
+Integrations authorize composition with compatible optional packages. They are
+never installed implicitly and never block activation. `extensions.manage` can
+request a user-reviewed install of a declared integration. Both arrays are explicit.
 
 Provider code is bundled by the Zyntax extension tooling into a self-contained
 `providers/*.js` module. Import only this package for host DTOs and provider
@@ -406,17 +405,17 @@ Extension builds never execute TypeScript source directly from `node_modules`.
 The SDK also defines bounded plain-data contracts for inline completions,
 assisted edits, AI code actions, decorations, document colors, hover, tasks, terminal
 profiles, SCM state, and project templates. A task provider returns one reviewed
-execution plan. A `managedTool` plan contains only an exact manifest-declared
-tool and entrypoint, bounded literal arguments, project-relative working-directory
-segments, and a required console mode, and requires `tools.execute`. A `runtime`
-plan references one declared runtime requirement, a symbolic command, bounded
-arguments, project-relative working-directory segments, and a required console
-mode, and requires `runtimes.execute`. A `command` plan contains one bare command
-name, bounded literal arguments, and project-relative working-directory segments,
-and requires `terminal`. The host resolves it from the user's terminal environment
-and owns its visible terminal session and process tree. The host resolves every
-plan only after approval, owns its lifetime and cancellation, and never exposes a
-native path, environment, shell fragment, or process handle to the provider. Terminal-profile
+execution plan. A `managedTool` plan selects a declared tool/entrypoint and requires
+`tools.execute`; a `runtime` plan selects a declared requirement/command and requires
+`runtimes.execute`; a `command` plan selects a bare command from the user's terminal
+environment and requires `terminal`. Every route explicitly selects `terminal` or
+`captured` console output, bounded arguments and contained working-directory segments.
+Arguments may include `ExtensionTaskPath` bindings. Optional process inputs bind
+environment values without exposing host routing variables. Package paths belong
+to declared installed stack requirements; signed `resources/*` assets belong to
+the exact extension generation. These references do not change execution domains:
+managed execution cannot acquire terminal-package paths or switch to terminal tools.
+The host resolves and reviews inputs before launch and owns cancellation. Terminal-profile
 and project-template providers likewise return descriptors or host-reviewed plans
 while the host owns process launch, filesystem writes, approvals, and transactions.
 Assisted-edit providers expose both bounded unary proposals and one ordered push
@@ -453,11 +452,13 @@ workspace/trust decision, process group, health, bounded UTF-8 logs, and exact a
 Terminal development dependencies use `contributes.developmentStacks` and the independent
 `terminal.packages` permission. A stack contains one to 32 required package symbols from the fixed
 host-known `zyntax` or `termux-main` repository identity. It cannot contain repository URLs, keys,
-versions, package-manager options, commands, paths, environment values, or scripts. The
-`terminal.packages` host API accepts only a declared stack id and `install`, `repair`, or `update`;
-the host resolves signed candidates, presents the complete Package Manager review, owns the one
-durable mutation queue, and returns only a bounded symbolic transaction snapshot. This permission
-does not grant `terminal`, `network`, or `tools.execute`.
+versions, package-manager options, commands, paths, environment values, or scripts.
+`inspectStack` returns installed, candidate and available versions. Transactions require
+`{ stack, intent, packages: [{ id, version }] }`: exact declared requirement selections for
+`install`, `repair`, `update` or `remove` (the installed version for removal). The existing
+Package Manager reviews the complete impact and owns the mutation queue; stale selections
+are rejected. This permission does not grant execution. Separate SDK/NDK components remain
+the responsibility of their installers, not a second package manager in the SDK.
 
 ```json
 {
@@ -466,7 +467,7 @@ does not grant `terminal`, `network`, or `tools.execute`.
     "developmentStacks": [{
       "id": "web-runtime",
       "label": "Web runtime",
-      "packages": [{ "repository": "termux-main", "package": "nodejs-lts" }]
+      "packages": [{ "id": "node", "repository": "termux-main", "package": "nodejs-lts" }]
     }]
   }
 }
@@ -528,14 +529,53 @@ requests; only the managed DAP host resolves it to a native path immediately
 before adapter launch.
 
 Providers with `workspace.read` can query the host-owned project index through
-`findFiles({ include, exclude?, maxResults }, cancellation)`. Globs are relative
-to the open project; a basename-only glob matches at any depth. Results contain
+`findFiles({ project, include, exclude?, maxResults }, cancellation)`. `project: null`
+explicitly means the explorer workspace; a selected context ID means that project.
+Globs are relative to that scope; a basename-only glob matches at any depth. Results contain
 only canonical document URIs and project-relative paths, are deterministic and
 bounded, and remain subject to the same project-confined `readText` boundary.
-`relativePath(uri, cancellation)` resolves a canonical document URI to its
-project-relative identity, or `null` when the document is outside the open
+`readText`, `readTextIfExists` and `relativePath` take `{ project, uri }`.
+`relativePath` returns its project-relative identity, or `null` outside the selected
 project. The isolated provider never receives a native path or direct filesystem
-access.
+access. `workspace.write.applyEdits` likewise takes `{ project, edits }`.
+
+## Project panels and owned tasks
+
+`projects.select` opens the host's location picker without changing the explorer.
+Relative input is explorer-relative; `~/` uses terminal home. Selection keys are
+saved locally per extension/workspace, while returned IDs never rebind to another
+location. `projects.bindIntegrations` explicitly shares a selected project with
+declared optional integrations after review; it shares no file/secret selections.
+Providers receive their scope in `context.workspace.project`, and task requests
+carry both scope and canonical project URI. Reads and language services must use
+that scope, not silently substitute the explorer project.
+
+`files.select` resolves relative input from its explicit project, supports user
+selection outside that root, and returns an owned file/directory reference for
+process bindings. Descendant paths must remain contained; a file reference allows
+no descendants. `files.export` copies a scoped artifact to a user-chosen destination.
+`secrets.request` uses host-owned private input and encrypted storage. Only references
+cross provider RPC and enter task environment bindings, never raw values or argv.
+Programs receiving credentials can print them; this is not a sandbox against a
+malicious build script. Host records and errors must not disclose credentials.
+
+`tasks.execute` operates the extension's declared task providers through one
+`list/start/sessions/observe/reveal/stop/release` lifecycle. `start` resolves scope
+and inputs once. Cancellation before a successful response also stops newly spawned
+work; after that response, `stop` owns cancellation. Observation waits for changes
+after a monotonic cursor and returns bounded output plus current lifecycle state;
+it does not poll or stop work when cancelled. Closing a panel does not stop builds.
+Exit frees the PTY, results stay until released, and extension disposal stops owned
+work. Root changes affect future launches, not already-running tasks.
+
+`workbench` updates/reveals/closes manifest-declared panels, including `dialog`
+placement. Reuse list/tree/form/detail descriptors and host controls, not a separate
+UI framework. Updates preserve stable-ID form drafts unless `resetForm` is requested.
+Per-control `disabled` state keeps actions such as Stop usable while a panel is busy.
+Semantic icons and file/folder icons resolve through app presentation; theme changes
+apply live. Isolated custom views use `presentation()`, revision-bound `resolveIcons`
+and `presentation` events for the same colors, typography and icons. They receive
+no app component imports, stylesheet paths or native asset paths.
 
 Preview providers may select registered editor languages or declare strict `paths`
 globs. Project files expose their project-relative path; external and untitled

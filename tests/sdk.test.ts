@@ -79,6 +79,9 @@ import {
   type ExtensionIntegration,
   type ExtensionLanguageContribution,
   type ExtensionTerminalPackageIntent,
+  type ExtensionTerminalPackageSelection,
+  type ExtensionTaskArgument,
+  type ExtensionTaskInputs,
   type ExtensionTerminalPackageTransactionReceipt,
   type ExtensionJsonValue,
   type ExtensionLanguageServerCapabilityMatrix,
@@ -570,7 +573,7 @@ describe("public extension SDK", () => {
       readonly kind: "runtime";
       readonly requirement: string;
       readonly command: string;
-      readonly args: readonly string[];
+      readonly args: readonly ExtensionTaskArgument[];
       readonly workingDirectory: readonly string[];
       readonly console: "terminal" | "captured";
     }>();
@@ -583,7 +586,7 @@ describe("public extension SDK", () => {
     expectTypeOf<ExtensionManagedToolTaskExecution["console"]>()
       .toEqualTypeOf<"terminal" | "captured">();
     expectTypeOf<ExtensionManagedToolTaskExecution["args"]>()
-      .toEqualTypeOf<readonly string[]>();
+      .toEqualTypeOf<readonly ExtensionTaskArgument[]>();
     expectTypeOf<Extract<
       ExtensionTaskExecution,
       { readonly kind: "command" }
@@ -591,8 +594,10 @@ describe("public extension SDK", () => {
     expectTypeOf<ExtensionCommandTaskExecution>().toEqualTypeOf<{
       readonly kind: "command";
       readonly command: string;
-      readonly args: readonly string[];
+      readonly args: readonly ExtensionTaskArgument[];
       readonly workingDirectory: readonly string[];
+      readonly console: "terminal" | "captured";
+      readonly inputs?: ExtensionTaskInputs;
     }>();
     expectTypeOf<ExtensionNotebookKernelDescriptor>().toEqualTypeOf<{
       readonly kind: "runtime";
@@ -933,6 +938,7 @@ describe("public extension SDK", () => {
     >[0]>().toEqualTypeOf<{
       readonly stack: string;
       readonly intent: ExtensionTerminalPackageIntent;
+      readonly packages: readonly ExtensionTerminalPackageSelection[];
     }>();
     expectTypeOf<Awaited<ReturnType<
       ExtensionHostCapabilityMap["terminal.packages"]["requestTransaction"]

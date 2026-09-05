@@ -1,3 +1,5 @@
+import type { ExtensionCancellationToken } from "../contract.js";
+
 /** A package resolved only through a host-owned signed repository identity. */
 export interface ExtensionTerminalPackageRequirement {
   /** Stack-local symbolic identity used by other declarative contributions. */
@@ -14,7 +16,26 @@ export interface ExtensionDevelopmentStackContribution {
   readonly packages: readonly ExtensionTerminalPackageRequirement[];
 }
 
-export type ExtensionTerminalPackageIntent = "install" | "repair" | "update";
+export type ExtensionTerminalPackageIntent = "install" | "repair" | "update" | "remove";
+
+export interface ExtensionTerminalPackageVersion {
+  readonly version: string;
+  readonly architecture: string;
+}
+
+/** Selects a declared stack requirement, never an arbitrary package name. */
+export interface ExtensionTerminalPackageSelection {
+  readonly id: string;
+  /** Exact available version, or the exact installed version for removal. */
+  readonly version: string;
+}
+
+export interface ExtensionTerminalPackageTransactionRequest {
+  readonly stack: string;
+  readonly intent: ExtensionTerminalPackageIntent;
+  /** Nonempty, unique stack-local selections reviewed together by the host. */
+  readonly packages: readonly ExtensionTerminalPackageSelection[];
+}
 
 export type ExtensionTerminalPackageState =
   | "installed"
@@ -35,6 +56,10 @@ export interface ExtensionTerminalPackageStackInspection {
     readonly repository: string;
     readonly package: string;
     readonly state: ExtensionTerminalPackageState;
+    readonly installedVersion: string | null;
+    readonly candidateVersion: string | null;
+    /** Versions available from the declared repository for compatible architectures. */
+    readonly versions: readonly ExtensionTerminalPackageVersion[];
   }[];
 }
 
@@ -63,6 +88,7 @@ export type ExtensionTerminalPackageTransactionPhase =
   | "install"
   | "reinstall"
   | "update"
+  | "remove"
   | "verify"
   | "complete";
 
@@ -86,4 +112,19 @@ export interface ExtensionTerminalPackageTransactionSnapshot {
   readonly total: number;
   readonly recovery: "notNeeded" | "repaired" | "attentionRequired";
   readonly error?: ExtensionTerminalPackageTransactionError;
+}
+
+/** Reviewed access to terminal packages declared by this exact extension generation. */
+export interface ExtensionTerminalPackagesApi {
+  inspectStack(stack: string): Promise<ExtensionTerminalPackageStackInspection>;
+  requestTransaction(
+    request: ExtensionTerminalPackageTransactionRequest,
+    cancellation: ExtensionCancellationToken,
+  ): Promise<ExtensionTerminalPackageTransactionReceipt>;
+  inspectTransaction(
+    transaction: string,
+  ): Promise<ExtensionTerminalPackageTransactionSnapshot>;
+  cancelTransaction(
+    transaction: string,
+  ): Promise<ExtensionTerminalPackageTransactionSnapshot>;
 }

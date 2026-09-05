@@ -14,12 +14,16 @@ import type {
   ExtensionPersistentServiceLogSlice,
   ExtensionPersistentServiceStatus,
 } from "./contracts/persistentServices.js";
+import type { ExtensionTerminalPackagesApi } from "./contracts/terminalPackages.js";
+import type { ExtensionWorkbenchApi } from "./contracts/workbench.js";
 import type {
-  ExtensionTerminalPackageIntent,
-  ExtensionTerminalPackageStackInspection,
-  ExtensionTerminalPackageTransactionReceipt,
-  ExtensionTerminalPackageTransactionSnapshot,
-} from "./contracts/terminalPackages.js";
+  ExtensionFilesApi,
+  ExtensionProjectsApi,
+  ExtensionProjectScope,
+  ExtensionWorkspaceDocumentRequest,
+} from "./contracts/projectContexts.js";
+import type { ExtensionTasksApi } from "./contracts/taskSessions.js";
+import type { ExtensionExtensionsApi, ExtensionSecretsApi } from "./contracts/extensionSetup.js";
 import type { EXTENSION_NOTEBOOK_KERNEL_PROTOCOL } from "./notebookKernelProtocol.js";
 import type {
   ExtensionRuntimeCommandConfigurationReference,
@@ -67,6 +71,9 @@ export type * from "./agent/protocol.js";
 export type * from "./extensionFirst.js";
 export type * from "./contracts/persistentServices.js";
 export type * from "./contracts/terminalPackages.js";
+export type * from "./contracts/projectContexts.js";
+export type * from "./contracts/taskSessions.js";
+export type * from "./contracts/extensionSetup.js";
 export * from "./contracts/runtimes.js";
 export * from "./notebookKernelProtocol.js";
 
@@ -984,12 +991,12 @@ export interface ExtensionQuickOpenProvider extends ExtensionDisposable {
 export interface ExtensionWorkspaceReadApi {
   /** Returns the canonical project-relative path for a document, or null outside the project. */
   relativePath(
-    uri: string,
+    request: ExtensionWorkspaceDocumentRequest,
     cancellation: ExtensionCancellationToken,
   ): Promise<string | null>;
-  readText(uri: string, cancellation: ExtensionCancellationToken): Promise<string>;
+  readText(request: ExtensionWorkspaceDocumentRequest, cancellation: ExtensionCancellationToken): Promise<string>;
   readTextIfExists(
-    uri: string,
+    request: ExtensionWorkspaceDocumentRequest,
     cancellation: ExtensionCancellationToken,
   ): Promise<
     | { readonly found: false }
@@ -1003,6 +1010,7 @@ export interface ExtensionWorkspaceReadApi {
 }
 
 export interface ExtensionWorkspaceFileQuery {
+  readonly project: ExtensionProjectScope;
   /** Required project-relative glob. A basename-only pattern matches at any depth. */
   readonly include: string;
   /** Optional project-relative glob removed from the include result. */
@@ -1024,7 +1032,10 @@ export interface ExtensionWorkspaceWriteEdit {
 
 export interface ExtensionWorkspaceWriteApi {
   applyEdits(
-    edits: readonly ExtensionWorkspaceWriteEdit[],
+    request: {
+      readonly project: ExtensionProjectScope;
+      readonly edits: readonly ExtensionWorkspaceWriteEdit[];
+    },
     cancellation: ExtensionCancellationToken,
   ): Promise<void>;
 }
@@ -1136,25 +1147,13 @@ export interface ExtensionPersistentServicesApi {
   ): Promise<ExtensionPersistentServiceLogSlice>;
 }
 
-/** Reviewed access to terminal packages declared by this exact extension generation. */
-export interface ExtensionTerminalPackagesApi {
-  inspectStack(stack: string): Promise<ExtensionTerminalPackageStackInspection>;
-  requestTransaction(
-    request: {
-      readonly stack: string;
-      readonly intent: ExtensionTerminalPackageIntent;
-    },
-    cancellation: ExtensionCancellationToken,
-  ): Promise<ExtensionTerminalPackageTransactionReceipt>;
-  inspectTransaction(
-    transaction: string,
-  ): Promise<ExtensionTerminalPackageTransactionSnapshot>;
-  cancelTransaction(
-    transaction: string,
-  ): Promise<ExtensionTerminalPackageTransactionSnapshot>;
-}
-
 export interface ExtensionHostCapabilityMap {
+  projects: ExtensionProjectsApi;
+  files: ExtensionFilesApi;
+  workbench: ExtensionWorkbenchApi;
+  "tasks.execute": ExtensionTasksApi;
+  "extensions.manage": ExtensionExtensionsApi;
+  secrets: ExtensionSecretsApi;
   "workspace.read": ExtensionWorkspaceReadApi;
   "workspace.write": ExtensionWorkspaceWriteApi;
   "commands.execute": ExtensionCommandsApi;
@@ -1178,9 +1177,10 @@ export type ExtensionHostApi<TPermission extends ExtensionHostPermission> = Read
   [TKey in TPermission]: ExtensionHostCapabilityMap[TKey];
 }>;
 
-/** Immutable host-owned state for the canonical active project. */
+/** Immutable host-owned scope for this activation; never inferred from extension identity. */
 export interface ExtensionWorkspaceContext {
   readonly isTrusted: boolean;
+  readonly project: ExtensionProjectScope;
 }
 
 export interface ExtensionProviderActivationContext<

@@ -1,3 +1,5 @@
+import type { ExtensionCancellationToken } from "../contract.js";
+
 export type WorkbenchContributionKind =
   | "menu"
   | "toolbar"
@@ -29,7 +31,8 @@ export type WorkbenchPanelPlacement =
   | "sidebar.primary"
   | "sidebar.secondary"
   | "bottom"
-  | "editor";
+  | "editor"
+  | "dialog";
 
 /** Icons are selected from this host-owned set; packages cannot provide components or markup. */
 export type WorkbenchIconId =
@@ -56,6 +59,17 @@ export type WorkbenchIconId =
   | "settings"
   | "terminal"
   | "warning";
+
+/** Display context for the active file-icon theme; grants no access to this path. */
+export interface WorkbenchFileIcon {
+  readonly kind: "file" | "folder";
+  readonly path: string;
+  readonly expanded?: boolean;
+  readonly root?: boolean;
+  readonly languageId?: string;
+}
+
+export type WorkbenchIcon = WorkbenchIconId | WorkbenchFileIcon;
 
 export type WorkbenchJsonValue =
   | null
@@ -85,7 +99,7 @@ interface WorkbenchCommandContributionBase extends WorkbenchContributionBase {
   readonly label: string;
   readonly compactLabel?: string;
   readonly tooltip?: string;
-  readonly icon?: WorkbenchIconId;
+  readonly icon?: WorkbenchIcon;
   readonly command: WorkbenchCommandReference;
   readonly enablement?: string;
 }
@@ -113,7 +127,7 @@ export interface WorkbenchStatusContribution extends WorkbenchContributionBase {
   readonly placement: WorkbenchStatusPlacement;
   readonly text: string;
   readonly tooltip?: string;
-  readonly icon?: WorkbenchIconId;
+  readonly icon?: WorkbenchIcon;
   readonly command?: WorkbenchCommandReference;
   readonly enablement?: string;
 }
@@ -122,9 +136,11 @@ interface WorkbenchViewItemBase {
   readonly id: string;
   readonly label: string;
   readonly description?: string;
-  readonly icon?: WorkbenchIconId;
+  readonly icon?: WorkbenchIcon;
   readonly when?: string;
   readonly enablement?: string;
+  /** Dynamic state, combined with declarative enablement; does not hide the item. */
+  readonly disabled?: boolean;
   readonly command?: WorkbenchCommandReference;
 }
 
@@ -160,6 +176,7 @@ interface WorkbenchFormFieldBase {
   readonly required?: boolean;
   readonly when?: string;
   readonly enablement?: string;
+  readonly disabled?: boolean;
 }
 
 export interface WorkbenchTextFormField extends WorkbenchFormFieldBase {
@@ -176,6 +193,7 @@ export interface WorkbenchCheckboxFormField extends WorkbenchFormFieldBase {
 export interface WorkbenchSelectOption {
   readonly value: string;
   readonly label: string;
+  readonly disabled?: boolean;
 }
 
 export interface WorkbenchSelectFormField extends WorkbenchFormFieldBase {
@@ -191,9 +209,10 @@ export type WorkbenchFormField =
 
 export interface WorkbenchFormSubmitDescriptor {
   readonly label: string;
-  readonly icon?: WorkbenchIconId;
+  readonly icon?: WorkbenchIcon;
   readonly command: string;
   readonly enablement?: string;
+  readonly disabled?: boolean;
 }
 
 export interface WorkbenchFormViewDescriptor {
@@ -254,8 +273,80 @@ export interface WorkbenchPanelContribution extends WorkbenchContributionBase {
   readonly kind: "panel";
   readonly placement: WorkbenchPanelPlacement;
   readonly title: string;
-  readonly icon?: WorkbenchIconId;
+  readonly icon?: WorkbenchIcon;
   readonly view: WorkbenchDeclarativeViewDescriptor;
+}
+
+/** Updates a manifest-declared panel owned by the calling extension activation. */
+export interface WorkbenchPanelUpdate {
+  /** Replace content; omitted content preserves the current view and its form draft. */
+  readonly view?: WorkbenchDeclarativeViewDescriptor;
+  readonly title?: string;
+  readonly busy?: boolean;
+  /** Restore form defaults explicitly, e.g. after selecting a different project.
+   * Otherwise updates reconcile stable field IDs and preserve user drafts.
+   */
+  readonly resetForm?: boolean;
+}
+
+export type WorkbenchPresentationColor =
+  | "background"
+  | "surface"
+  | "header"
+  | "border"
+  | "accent"
+  | "accentHover"
+  | "foreground"
+  | "muted"
+  | "success"
+  | "warning"
+  | "danger"
+  | "selection"
+  | "hover"
+  | "active"
+  | "scrollbar"
+  | "focus";
+
+/** Shared presentation data for isolated custom views, without app CSS or asset paths. */
+export interface WorkbenchPresentation {
+  /** Increases when colors, typography or icon selection changes. */
+  readonly revision: number;
+  readonly colorScheme: "light" | "dark";
+  readonly highContrast: boolean;
+  readonly colors: Readonly<Record<WorkbenchPresentationColor, string>>;
+  readonly fontFamily: string;
+  /** CSS pixels. */
+  readonly fontSize: number;
+  readonly iconTheme: string;
+}
+
+export type WorkbenchIconDataUrl = `data:image/svg+xml;base64,${string}`;
+
+export interface WorkbenchResolvedIcons {
+  /** Presentation revision used to resolve every icon in this result. */
+  readonly revision: number;
+  /** Host-produced SVG data URLs in the same order as the requested icons. */
+  readonly icons: readonly WorkbenchIconDataUrl[];
+}
+
+/** All panel IDs refer to this activation's declared panels, never arbitrary host UI. */
+export interface ExtensionWorkbenchApi {
+  /** At least one update field is required; other panel state remains unchanged. */
+  updatePanel(
+    panel: string,
+    update: WorkbenchPanelUpdate,
+    cancellation: ExtensionCancellationToken,
+  ): Promise<void>;
+  reveal(panel: string, cancellation: ExtensionCancellationToken): Promise<void>;
+  /** Closes presentation only; it does not stop extension-owned tasks. */
+  close(panel: string): Promise<void>;
+  presentation(
+    cancellation: ExtensionCancellationToken,
+  ): Promise<WorkbenchPresentation>;
+  resolveIcons(
+    icons: readonly WorkbenchIcon[],
+    cancellation: ExtensionCancellationToken,
+  ): Promise<WorkbenchResolvedIcons>;
 }
 
 /**
@@ -268,7 +359,7 @@ export interface WorkbenchCustomViewContribution
   readonly kind: "customView";
   readonly placement: WorkbenchPanelPlacement;
   readonly title: string;
-  readonly icon?: WorkbenchIconId;
+  readonly icon?: WorkbenchIcon;
   readonly entrypoint: string;
   readonly resources: readonly string[];
 }
@@ -311,13 +402,20 @@ export interface ExtensionViewHostFailure {
   };
 }
 
+/** Sent when the view opens and whenever shared presentation changes. */
+export interface ExtensionViewPresentationEvent {
+  readonly type: "presentation";
+  readonly presentation: WorkbenchPresentation;
+}
+
 export type ExtensionViewHostMessage =
   | ExtensionViewHostRequest
   | ExtensionViewHostCancel;
 
 export type ExtensionViewHostResponse =
   | ExtensionViewHostSuccess
-  | ExtensionViewHostFailure;
+  | ExtensionViewHostFailure
+  | ExtensionViewPresentationEvent;
 
 /** Exact origin-scoped object injected only by the dedicated native extension-view renderer. */
 export interface ExtensionViewHostBridge {
