@@ -1,6 +1,6 @@
 {
   "name": "@zyntax/extension-sdk",
-  "version": "1.0.21",
+  "version": "1.0.22",
   "description": "Canonical public contracts and authoring helpers for Zyntax extensions.",
   "author": "amitkhare",
   "type": "module",
@@ -48,7 +48,8 @@
       "types": "./dist/agent/capabilities.d.ts",
       "import": "./dist/agent/capabilities.js"
     },
-    "./manifest-conformance.json": "./fixtures/manifest-conformance.json"
+    "./manifest-conformance.json": "./fixtures/manifest-conformance.json",
+    "./runtime-contract.json": "./dist/runtime-contract.json"
   },
   "scripts": {
     "build": "node ./scripts/build.mjs",

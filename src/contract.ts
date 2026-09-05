@@ -34,6 +34,7 @@ export type * from "./contracts/manifest.js";
 export * from "./contracts/managedTools.js";
 export { EXTENSION_PROVIDER_METHODS } from "./providerMethods.js";
 export type { ExtensionProviderMethod } from "./providerMethods.js";
+export * from "./hostMethods.js";
 export {
   EXTENSION_ACTIVATION_PROVIDER_KINDS,
   EXTENSION_CONTRIBUTION_FIELDS,

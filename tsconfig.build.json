@@ -9,5 +9,5 @@
     "sourceMap": true
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["src/capabilities.d.ts", "src/manifestConstants.d.ts", "src/providerMethods.d.ts"]
+  "exclude": ["src/capabilities.d.ts", "src/manifestConstants.d.ts"]
 }

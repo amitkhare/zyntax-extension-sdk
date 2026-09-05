@@ -19,6 +19,13 @@ Tooling consumes the `provider-methods`, `manifest-constants`, and `capabilities
 subpaths so manifest validation and provider bundle validation share one public
 vocabulary.
 
+`EXTENSION_HOST_API_METHODS` and `EXTENSION_HOST_API_INTERACTIVE_METHODS` define
+the host method vocabulary and which calls wait for user interaction or observed
+work. The build exports `runtime-contract.json` from these constants and the
+provider methods for non-JavaScript hosts. Host adapters consume this artifact
+instead of maintaining separate method lists. Provider method types are generated
+from the same TypeScript source as their runtime values.
+
 ```ts
 import {
   EXTENSION_API_VERSION,

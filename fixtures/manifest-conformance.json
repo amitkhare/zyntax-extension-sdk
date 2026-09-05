@@ -1,6 +1,16 @@
 {
   "formatVersion": 1,
   "hostVersion": "0.9.0",
+  "hostMethods": {
+    "cases": [
+      { "capability": "workspace.read", "method": "readText", "valid": true, "interactive": false },
+      { "capability": "files", "method": "select", "valid": true, "interactive": true },
+      { "capability": "tasks.execute", "method": "observe", "valid": true, "interactive": true },
+      { "capability": "workbench", "method": "presentation", "valid": true, "interactive": false },
+      { "capability": "files", "method": "presentation", "valid": false, "interactive": false },
+      { "capability": "missing", "method": "select", "valid": false, "interactive": false }
+    ]
+  },
   "languageServerProjectFiles": {
     "cases": [
       { "path": "project.json", "valid": true },

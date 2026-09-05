@@ -1,4 +1,4 @@
-import { cp, mkdir, rm } from "node:fs/promises";
+import { cp, mkdir, rm, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawn } from "node:child_process";
@@ -33,8 +33,15 @@ for (const file of [
   "capabilities.d.ts",
   "manifestConstants.js",
   "manifestConstants.d.ts",
-  "providerMethods.js",
-  "providerMethods.d.ts",
 ]) {
   await cp(resolve(packageRoot, "src", file), resolve(distRoot, file));
 }
+
+const { EXTENSION_PROVIDER_METHODS } = await import("../dist/providerMethods.js");
+const { EXTENSION_HOST_API_METHODS, EXTENSION_HOST_API_INTERACTIVE_METHODS } =
+  await import("../dist/hostMethods.js");
+await writeFile(resolve(distRoot, "runtime-contract.json"), JSON.stringify({
+  providerMethods: EXTENSION_PROVIDER_METHODS,
+  hostMethods: EXTENSION_HOST_API_METHODS,
+  interactiveHostMethods: EXTENSION_HOST_API_INTERACTIVE_METHODS,
+}, null, 2) + "\n");
