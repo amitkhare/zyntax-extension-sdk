@@ -34,6 +34,16 @@
       { "path": "config/\u0000project.json", "valid": false }
     ]
   },
+  "languageServerConfiguration": {
+    "cases": [
+      { "configurationProvider": { "module": "providers/configuration.js", "export": "createConfiguration", "watchFiles": [".config/project.json"] }, "valid": true },
+      { "configurationProvider": { "module": "providers/configuration.js", "export": "createConfiguration", "watchFiles": [] }, "valid": false },
+      { "configurationProvider": { "module": "providers/configuration.js", "export": "createConfiguration", "watchFiles": ["../project.json"] }, "valid": false },
+      { "configurationProvider": { "module": "providers/configuration.js", "export": "createConfiguration", "watchFiles": ["project.json", "project.json"] }, "valid": false },
+      { "configurationProvider": { "module": "providers/configuration.js", "export": "createConfiguration", "watchFiles": ["project.json"] }, "workspaceConfiguration": {}, "valid": false },
+      { "configurationProvider": { "module": "providers/configuration.js", "export": "createConfiguration", "watchFiles": ["project.json"] }, "initializationOptions": {}, "valid": false }
+    ]
+  },
   "managedToolPaths": {
     "cases": [
       { "path": "payload/include/Name.h", "valid": true },

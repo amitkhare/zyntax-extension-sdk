@@ -89,7 +89,7 @@ export type ExtensionProviderKind = (typeof EXTENSION_PROVIDER_KINDS)[number];
 /** Commands and agent harnesses have dedicated activation events. */
 export type ExtensionActivationProviderKind = Exclude<
   ExtensionProviderKind,
-  "agent" | "command" | "documentParser"
+  "agent" | "command" | "documentParser" | "languageServerConfiguration"
 >;
 
 export type ExtensionActivationEvent =
@@ -314,6 +314,16 @@ export interface ExtensionLanguageServerContribution {
   projectFiles?: readonly string[];
   initializationOptions?: ExtensionJsonValue;
   workspaceConfiguration?: ExtensionJsonObject;
+  /** Computes the complete configuration in this server's project scope. Mutually
+   * exclusive with inline initializationOptions/workspaceConfiguration. Changes to
+   * these exact project-relative files invalidate configuration and restart this
+   * server; no project code is executed merely to watch a file.
+   */
+  configurationProvider?: {
+    module: `providers/${string}.js`;
+    export: string;
+    watchFiles: readonly string[];
+  };
   requestTimeoutMs: number;
   memoryLimitBytes: number;
   maxMessageBytes: number;

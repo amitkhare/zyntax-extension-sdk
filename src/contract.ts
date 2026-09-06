@@ -1063,6 +1063,25 @@ export interface ExtensionToolsApi {
   ): Promise<ExtensionJsonValue>;
 }
 
+/** Complete configuration, not a merge with stale or inline settings. Values are
+ * ordinary JSON; executable/resource authority remains in the signed manifest.
+ */
+export interface ExtensionLanguageServerConfiguration {
+  readonly initializationOptions?: ExtensionJsonValue;
+  readonly workspaceConfiguration?: ExtensionJsonObject;
+}
+
+export interface ExtensionLanguageServerConfigurationProvider extends ExtensionDisposable {
+  provideLanguageServerConfiguration(
+    request: {
+      readonly project: ExtensionProjectScope;
+      readonly projectUri: string;
+      readonly serverId: string;
+    },
+    cancellation: ExtensionCancellationToken,
+  ): ExtensionLanguageServerConfiguration | Promise<ExtensionLanguageServerConfiguration>;
+}
+
 export interface ExtensionStorageApi {
   get(key: string): Promise<ExtensionJsonValue | undefined>;
   set(key: string, value: ExtensionJsonValue): Promise<void>;

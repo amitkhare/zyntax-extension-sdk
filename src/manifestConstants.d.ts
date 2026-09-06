@@ -92,6 +92,7 @@ export declare const EXTENSION_PROVIDER_KINDS: readonly [
   "structuralRegions",
   "virtualDocuments",
   "documentParser",
+  "languageServerConfiguration",
   "documentFormatting",
   "rangeFormatting",
   "diagnostics",
@@ -122,7 +123,7 @@ export declare const EXTENSION_PROVIDER_KINDS: readonly [
 
 export declare const EXTENSION_ACTIVATION_PROVIDER_KINDS: readonly Exclude<
   (typeof EXTENSION_PROVIDER_KINDS)[number],
-  "command" | "agent" | "documentParser"
+  "command" | "agent" | "documentParser" | "languageServerConfiguration"
 >[];
 
 export declare const EXTENSION_SEARCH_PROVIDER_KINDS: readonly [

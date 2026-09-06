@@ -129,6 +129,7 @@ export const EXTENSION_PROVIDER_KINDS = Object.freeze([
   "structuralRegions",
   "virtualDocuments",
   "documentParser",
+  "languageServerConfiguration",
   "documentFormatting",
   "rangeFormatting",
   "diagnostics",
@@ -160,7 +161,7 @@ export const EXTENSION_PROVIDER_KINDS = Object.freeze([
 /** Commands and agent harnesses use dedicated activation events. */
 export const EXTENSION_ACTIVATION_PROVIDER_KINDS = Object.freeze(
   EXTENSION_PROVIDER_KINDS.filter(
-    (kind) => kind !== "command" && kind !== "agent" && kind !== "documentParser",
+    (kind) => !["command", "agent", "documentParser", "languageServerConfiguration"].includes(kind),
   ),
 );
 

@@ -30,6 +30,7 @@ import type {
   ExtensionStructuralRegionProvider,
   ExtensionTextSearchProvider,
   ExtensionVirtualDocumentProvider,
+  ExtensionLanguageServerConfigurationProvider,
 } from "./contract.js";
 import type {
   ExtensionAICodeActionProvider,
@@ -100,6 +101,12 @@ export function defineVirtualDocumentProvider<
     ExtensionVirtualDocumentProvider,
     ExtensionHostPermission
   >,
+>(factory: TFactory): TFactory {
+  return factory;
+}
+
+export function defineLanguageServerConfigurationProvider<
+  TFactory extends ExtensionProviderFactory<ExtensionLanguageServerConfigurationProvider, ExtensionHostPermission>,
 >(factory: TFactory): TFactory {
   return factory;
 }

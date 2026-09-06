@@ -385,6 +385,23 @@ rather than unsaved editor buffers, and is re-evaluated when the project or thos
 files change. No directory scan or glob matching is performed. Omitting
 `projectFiles` makes the server unconditional.
 
+For evaluated project settings, declare `configurationProvider: { module, export,
+watchFiles }` on the language server instead of inline `initializationOptions` or
+`workspaceConfiguration`. Export a `defineLanguageServerConfigurationProvider`
+factory from the usual isolated provider module. Its
+`provideLanguageServerConfiguration({ project, projectUri, serverId }, cancellation)`
+returns the complete `{ initializationOptions?, workspaceConfiguration? }` JSON.
+The host uses the server's granted project scope and existing cancellation/payload
+limits. Results do not grant resource access or executable authority.
+
+`watchFiles` uses the same exact paths and non-empty 32-file limit as `projectFiles`.
+Creation, content changes and deletion invalidate only the affected server's
+configuration. The host cancels stale work and restarts that server with current
+document snapshots; it does not evaluate project code or poll on keystrokes.
+Malformed configuration fails explicitly; no old configuration is substituted.
+The provider kind `languageServerConfiguration` belongs to its server and has no
+independent activation event. Inline and provider configurations cannot be combined.
+
 `isExtensionProjectFilePath` validates the shared path syntax. Paths use forward
 slashes and contain at most `EXTENSION_LSP_MAX_PROJECT_FILE_LENGTH` (384) UTF-16
 code units. Unicode and interior spaces are allowed; absolute paths, empty,

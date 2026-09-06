@@ -55,6 +55,7 @@ import {
   debugProjectPath,
   defineCompletionProvider,
   defineHoverProvider,
+  defineLanguageServerConfigurationProvider,
   defineProviderModule,
   definePreviewProvider,
   defineProjectTemplateProvider,
@@ -130,6 +131,20 @@ import {
 } from "../src/index.js";
 
 describe("public extension SDK", () => {
+  it("uses one project-scoped provider method for complete server configuration", () => {
+    const factory = defineLanguageServerConfigurationProvider(() => ({
+      provideLanguageServerConfiguration(request, cancellation) {
+        cancellation.throwIfCancellationRequested();
+        return { workspaceConfiguration: { project: request.project, root: request.projectUri, server: request.serverId } };
+      },
+      dispose() {},
+    }));
+    expect(defineProviderModule({ createConfiguration: factory }).extensionApiVersion).toBe(1);
+    expect(EXTENSION_PROVIDER_METHODS.languageServerConfiguration).toEqual(["provideLanguageServerConfiguration"]);
+    const reference = fixture.languageServerConfiguration.cases[0]!.configurationProvider;
+    expect(reference.watchFiles.every(isExtensionProjectFilePath)).toBe(true);
+    expectTypeOf<NonNullable<ExtensionLanguageServerContribution["configurationProvider"]>["watchFiles"]>().toEqualTypeOf<readonly string[]>();
+  });
   it("validates exact project-file conditions without scanning or case folding", () => {
     for (const { path, valid } of fixture.languageServerProjectFiles.cases) {
       expect(isExtensionProjectFilePath(path), path).toBe(valid);

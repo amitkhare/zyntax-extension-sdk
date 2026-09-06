@@ -12,6 +12,7 @@ export const EXTENSION_PROVIDER_METHODS = Object.freeze({
   ] as const),
   virtualDocuments: Object.freeze(["provideVirtualDocuments"] as const),
   documentParser: Object.freeze(["parseDocument"] as const),
+  languageServerConfiguration: Object.freeze(["provideLanguageServerConfiguration"] as const),
   documentFormatting: Object.freeze(["provideDocumentFormatting"] as const),
   rangeFormatting: Object.freeze(["provideRangeFormatting"] as const),
   diagnostics: Object.freeze(["provideDiagnostics"] as const),
