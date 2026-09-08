@@ -38,10 +38,12 @@ for (const file of [
 }
 
 const { EXTENSION_PROVIDER_METHODS } = await import("../dist/providerMethods.js");
+const { FILE_OPENER_RULES } = await import("../dist/fileOpeners.js");
 const { EXTENSION_HOST_API_METHODS, EXTENSION_HOST_API_INTERACTIVE_METHODS } =
   await import("../dist/hostMethods.js");
 await writeFile(resolve(distRoot, "runtime-contract.json"), JSON.stringify({
   providerMethods: EXTENSION_PROVIDER_METHODS,
   hostMethods: EXTENSION_HOST_API_METHODS,
   interactiveHostMethods: EXTENSION_HOST_API_INTERACTIVE_METHODS,
+  fileOpeners: FILE_OPENER_RULES,
 }, null, 2) + "\n");

@@ -1,10 +1,12 @@
 import type { ExtensionCancellationToken } from "../contract.js";
+import type { FileOpenerOptions } from "../fileOpeners.js";
 
 export type WorkbenchContributionKind =
   | "menu"
   | "toolbar"
   | "touchEditorToolbar"
   | "status"
+  | "fileOpener"
   | "panel"
   | "customView";
 
@@ -86,6 +88,15 @@ export type WorkbenchCommandArguments = Readonly<
 export interface WorkbenchCommandReference {
   readonly command: string;
   readonly args?: WorkbenchCommandArguments;
+}
+
+/** User-initiated native file opening; no provider or arbitrary intent is exposed. */
+export interface WorkbenchFileOpenerContribution extends WorkbenchContributionBase, FileOpenerOptions {
+  readonly kind: "fileOpener";
+  /** Supplies the file-click action and the selected file's Explorer menu action. */
+  readonly placement: "explorer.file";
+  readonly label: string;
+  readonly icon?: WorkbenchIcon;
 }
 
 interface WorkbenchContributionBase {
@@ -366,6 +377,7 @@ export interface WorkbenchCustomViewContribution
 
 export type WorkbenchContribution =
   | WorkbenchMenuContribution
+  | WorkbenchFileOpenerContribution
   | WorkbenchToolbarContribution
   | TouchEditorToolbarContribution
   | WorkbenchStatusContribution

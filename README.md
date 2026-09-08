@@ -601,6 +601,34 @@ apply live. Isolated custom views use `presentation()`, revision-bound `resolveI
 and `presentation` events for the same colors, typography and icons. They receive
 no app component imports, stylesheet paths or native asset paths.
 
+### Optional system file actions
+
+SDK `1.0.24` adds `kind: "fileOpener"` in `contributes.workbench`, with
+`placement: "explorer.file"`, `id`, `label`, optional themed `icon`, and the usual
+`when`/`group`/`order` presentation fields. Declare `extensions`, `filenames`, an
+exact `mimeType`, and `requiredPermissions`. Both association arrays are required;
+at least one must be nonempty. Extensions are lowercase literal suffixes, including
+compound suffixes; filenames are literal basenames. Matching is case-insensitive.
+`parseFileOpenerOptions` and `matchesFileOpener` provide the shared rules; native
+hosts consume the same bounds and patterns from `runtime-contract.json`.
+
+The package declares `files` and `workbench` permissions. It needs no provider,
+tool, activation event or executable code. `requiredPermissions` lists platform
+manifest requirements only (use `[]` when none); it cannot request or grant them.
+Unavailable actions are hidden. A user-declined platform setting is distinct from
+an absent manifest permission: the operating system owns its consent UI.
+
+The host offers the action for explicit file clicks and the selected file's menu.
+Existing language/preview handlers retain click priority; multiple matching actions
+require user selection, never an arbitrary winner. Restore, code navigation and
+programmatic extension commands cannot launch these actions. Both project files
+and user-selected provider documents are supported without exposing native paths
+or file bytes to extension code. The host validates active owner identity, source
+access, association and manifest requirements before preparing data and launching,
+grants only read access to the selected file, and cancels pending work when its
+owner is disposed. Launching a handler does not mean installation or viewing has
+completed. This contract has no arbitrary intent, package-target or URL parameters.
+
 Preview providers may select registered editor languages or declare strict `paths`
 globs. Project files expose their project-relative path; external and untitled
 documents expose their canonical display name. Path selectors route previews without

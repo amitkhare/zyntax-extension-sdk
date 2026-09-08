@@ -1,6 +1,23 @@
 {
   "formatVersion": 1,
   "hostVersion": "0.9.0",
+  "fileOpeners": {
+    "base": { "extensions": [".pdf"], "filenames": [], "mimeType": "application/pdf", "requiredPermissions": [] },
+    "cases": [
+      { "patch": {}, "valid": true },
+      { "patch": { "extensions": [".tar.gz"] }, "valid": true },
+      { "patch": { "extensions": [], "filenames": ["LICENSE"] }, "valid": true },
+      { "patch": { "requiredPermissions": ["example.permission.OPEN_DOCUMENT"] }, "valid": true },
+      { "patch": { "extensions": [] }, "valid": false },
+      { "patch": { "extensions": [".PDF"] }, "valid": false },
+      { "patch": { "filenames": ["../document"] }, "valid": false },
+      { "patch": { "filenames": ["LICENSE", "license"] }, "valid": false },
+      { "patch": { "mimeType": "application/*" }, "valid": false },
+      { "patch": { "mimeType": "application/pdf\n" }, "valid": false },
+      { "patch": { "requiredPermissions": ["permission"] }, "valid": false },
+      { "patch": { "requiredPermissions": ["example.permission.OPEN", "example.permission.OPEN"] }, "valid": false }
+    ]
+  },
   "hostMethods": {
     "cases": [
       { "capability": "workspace.read", "method": "readText", "valid": true, "interactive": false },
@@ -2106,6 +2123,21 @@
                 "disabled": true
               }]
             }
+          }]
+        }
+      }
+    },
+    {
+      "id": "workbench-file-opener-valid",
+      "area": "workbench",
+      "valid": true,
+      "patch": {
+        "permissions": ["files", "workbench"],
+        "contributes": {
+          "workbench": [{
+            "kind": "fileOpener", "id": "document-viewer", "placement": "explorer.file",
+            "label": "Open document", "icon": "file", "extensions": [".pdf"],
+            "filenames": [], "mimeType": "application/pdf", "requiredPermissions": []
           }]
         }
       }
