@@ -117,6 +117,10 @@ export interface ExtensionTerminalPackageTransactionSnapshot {
 /** Reviewed access to terminal packages declared by this exact extension generation. */
 export interface ExtensionTerminalPackagesApi {
   inspectStack(stack: string): Promise<ExtensionTerminalPackageStackInspection>;
+  /** Refresh host-configured signed indexes before inspecting this declared stack.
+   * Uses the existing package-operation queue; cancellation stops the refresh.
+   */
+  refreshStack(stack: string, cancellation: ExtensionCancellationToken): Promise<ExtensionTerminalPackageStackInspection>;
   requestTransaction(
     request: ExtensionTerminalPackageTransactionRequest,
     cancellation: ExtensionCancellationToken,
@@ -124,6 +128,10 @@ export interface ExtensionTerminalPackagesApi {
   inspectTransaction(
     transaction: string,
   ): Promise<ExtensionTerminalPackageTransactionSnapshot>;
+  /** Wait for a terminal transaction state without polling. Cancelling this wait
+   * does not cancel the transaction; use cancelTransaction to stop the operation.
+   */
+  waitTransaction(transaction: string, cancellation: ExtensionCancellationToken): Promise<ExtensionTerminalPackageTransactionSnapshot>;
   cancelTransaction(
     transaction: string,
   ): Promise<ExtensionTerminalPackageTransactionSnapshot>;

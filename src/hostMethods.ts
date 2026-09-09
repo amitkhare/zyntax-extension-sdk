@@ -19,7 +19,7 @@ export const EXTENSION_HOST_API_METHODS = Object.freeze({
   notifications: Object.freeze(["show"] as const),
   "services.manage": Object.freeze(["list", "status", "start", "stop", "restart", "readLog"] as const),
   terminal: Object.freeze(["profiles", "launch"] as const),
-  "terminal.packages": Object.freeze(["inspectStack", "requestTransaction", "inspectTransaction", "cancelTransaction"] as const),
+  "terminal.packages": Object.freeze(["inspectStack", "refreshStack", "requestTransaction", "inspectTransaction", "waitTransaction", "cancelTransaction"] as const),
 } satisfies {
   readonly [TCapability in keyof ExtensionHostCapabilityMap]: readonly (keyof ExtensionHostCapabilityMap[TCapability])[];
 });
@@ -36,5 +36,6 @@ type ExtensionHostMethodId = {
 export const EXTENSION_HOST_API_INTERACTIVE_METHODS = Object.freeze([
   "projects:select", "projects:bindIntegrations", "files:select", "files:export",
   "secrets:request", "extensions.manage:requestInstall", "terminal.packages:requestTransaction",
+  "terminal.packages:refreshStack", "terminal.packages:waitTransaction",
   "tasks.execute:start", "tasks.execute:observe", "commands.execute:execute",
 ] as const satisfies readonly ExtensionHostMethodId[]);

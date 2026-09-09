@@ -477,12 +477,19 @@ Terminal development dependencies use `contributes.developmentStacks` and the in
 `terminal.packages` permission. A stack contains one to 32 required package symbols from the fixed
 host-known `zyntax` or `termux-main` repository identity. It cannot contain repository URLs, keys,
 versions, package-manager options, commands, paths, environment values, or scripts.
-`inspectStack` returns installed, candidate and available versions. Transactions require
+`inspectStack` returns installed, candidate and available versions from current indexes.
+`refreshStack(stack, cancellation)` first refreshes host-configured signed indexes through
+the existing package-operation queue, then returns the same inspection. Use it before
+selecting missing packages; it does not install or upgrade anything. Transactions require
 `{ stack, intent, packages: [{ id, version }] }`: exact declared requirement selections for
 `install`, `repair`, `update` or `remove` (the installed version for removal). The existing
 Package Manager reviews the complete impact and owns the mutation queue; stale selections
 are rejected. This permission does not grant execution. Separate SDK/NDK components remain
 the responsibility of their installers, not a second package manager in the SDK.
+`waitTransaction(transaction, cancellation)` waits for a terminal state without polling.
+Cancelling that wait leaves the transaction running; `cancelTransaction` stops it.
+Both refresh and completion waits are cancellable interactive host methods. SDK 1.0.25
+adds only these generic operations, with no project-specific policy or version allowlist.
 
 ```json
 {

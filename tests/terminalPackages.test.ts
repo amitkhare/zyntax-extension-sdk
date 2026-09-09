@@ -3,11 +3,23 @@ import type {
   ExtensionTerminalPackageSelection,
   ExtensionTerminalPackageStackInspection,
   ExtensionTerminalPackageTransactionRequest,
+  ExtensionTerminalPackageTransactionSnapshot,
   ExtensionTerminalPackageVersion,
   ExtensionTerminalPackagesApi,
 } from "../src/contracts/terminalPackages.js";
+import type { ExtensionCancellationToken } from "../src/contract.js";
 
 describe("terminal package contract", () => {
+  it("supports cancellable signed-index refresh and event-driven transaction completion", () => {
+    expectTypeOf<Parameters<ExtensionTerminalPackagesApi["refreshStack"]>>()
+      .toEqualTypeOf<[string, ExtensionCancellationToken]>();
+    expectTypeOf<Awaited<ReturnType<ExtensionTerminalPackagesApi["refreshStack"]>>>()
+      .toEqualTypeOf<ExtensionTerminalPackageStackInspection>();
+    expectTypeOf<Parameters<ExtensionTerminalPackagesApi["waitTransaction"]>>()
+      .toEqualTypeOf<[string, ExtensionCancellationToken]>();
+    expectTypeOf<Awaited<ReturnType<ExtensionTerminalPackagesApi["waitTransaction"]>>>()
+      .toEqualTypeOf<ExtensionTerminalPackageTransactionSnapshot>();
+  });
   it("requires explicit stack-local selections and exact versions for every operation", () => {
     expectTypeOf<Parameters<ExtensionTerminalPackagesApi["requestTransaction"]>[0]>()
       .toEqualTypeOf<ExtensionTerminalPackageTransactionRequest>();
