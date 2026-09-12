@@ -14,6 +14,7 @@ import type {
   ExtensionRuntimeRequirement,
 } from "./runtimes.js";
 import {
+  EXTENSION_APP_VARIANTS,
   EXTENSION_ACTIVATION_PROVIDER_KINDS,
   EXTENSION_CONTRIBUTION_FIELDS,
   EXTENSION_EXECUTION_MAX_ARGUMENTS,
@@ -51,6 +52,7 @@ export type * from "./runtimes.js";
 export const EXTENSION_API_VERSION = 1 as const;
 
 export {
+  EXTENSION_APP_VARIANTS,
   EXTENSION_ACTIVATION_PROVIDER_KINDS,
   EXTENSION_CONTRIBUTION_FIELDS,
   EXTENSION_EXECUTION_MAX_ARGUMENTS,
@@ -79,6 +81,7 @@ export {
   isExtensionProjectFilePath,
 };
 
+export type ExtensionAppVariant = (typeof EXTENSION_APP_VARIANTS)[number];
 export type ExtensionPermission = (typeof EXTENSION_PERMISSIONS)[number];
 
 export type ExtensionSearchProviderKind =
@@ -754,6 +757,8 @@ export interface ExtensionManifest {
   homepage?: string;
   issues?: string;
   engines: { zyntax: string };
+  /** Omit for all editions; otherwise a nonempty unique list. Dev has no bypass. */
+  appVariants?: ExtensionAppVariant[];
   capabilities?: ExtensionCapabilities;
   activationEvents: ExtensionActivationEvent[];
   permissions: ExtensionPermission[];

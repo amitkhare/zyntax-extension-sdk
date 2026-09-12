@@ -49,6 +49,21 @@ export const createCompletionProvider = defineCompletionProvider(
 Manifest validation remains host/tooling-owned. The SDK does not grant
 permissions or platform access.
 
+## App variants
+
+An optional signed manifest field limits an extension to specific app editions:
+
+```json
+"appVariants": ["full", "dev"]
+```
+
+Omit `appVariants` to support all editions. When present, it must be a nonempty
+list of unique `lite`, `full`, or `dev` values; order does not matter. Dev is an
+explicit edition, not a bypass. The host checks compatibility when installing
+and activating packages, including required dependencies. The existing package
+signature protects this plain JSON field; it is not an encrypted licensing system.
+Tool/runtime requirements and `engines.zyntax` remain separate checks.
+
 ## Cooperative cancellation
 
 Every provider cancellation token exposes `checkpoint()`. Awaiting it yields

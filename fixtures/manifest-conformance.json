@@ -1,6 +1,24 @@
 {
   "formatVersion": 1,
   "hostVersion": "0.9.0",
+  "appVariants": {
+    "cases": [
+      { "patch": {}, "valid": true },
+      { "patch": { "appVariants": ["full", "dev"] }, "valid": true },
+      { "patch": { "appVariants": ["lite"] }, "valid": true },
+      { "patch": { "appVariants": ["full"] }, "valid": true },
+      { "patch": { "appVariants": ["dev"] }, "valid": true },
+      { "patch": { "appVariants": ["dev", "lite", "full"] }, "valid": true },
+      { "patch": { "appVariants": [] }, "valid": false },
+      { "patch": { "appVariants": null }, "valid": false },
+      { "patch": { "appVariants": "full" }, "valid": false },
+      { "patch": { "appVariants": ["full", "full"] }, "valid": false },
+      { "patch": { "appVariants": ["Full"] }, "valid": false },
+      { "patch": { "appVariants": ["all"] }, "valid": false },
+      { "patch": { "appVariants": ["full", "unknown"] }, "valid": false },
+      { "patch": { "appVariants": [false] }, "valid": false }
+    ]
+  },
   "fileOpeners": {
     "base": { "extensions": [".pdf"], "filenames": [], "mimeType": "application/pdf", "requiredPermissions": [] },
     "cases": [

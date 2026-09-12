@@ -3,6 +3,7 @@ import fixture from "../fixtures/manifest-conformance.json" with { type: "json" 
 
 import {
   EXTENSION_API_VERSION,
+  EXTENSION_APP_VARIANTS,
   EXTENSION_CONTRIBUTION_FIELDS,
   EXTENSION_DEVELOPMENT_STACK_MAX_CONTRIBUTIONS,
   EXTENSION_DEVELOPMENT_STACK_MAX_REQUIREMENTS,
@@ -145,6 +146,17 @@ describe("public extension SDK", () => {
     expect(reference.watchFiles.every(isExtensionProjectFilePath)).toBe(true);
     expectTypeOf<NonNullable<ExtensionLanguageServerContribution["configurationProvider"]>["watchFiles"]>().toEqualTypeOf<readonly string[]>();
   });
+  it("defines plain app editions and shared strict optional-list conformance cases", () => {
+    expect(EXTENSION_APP_VARIANTS).toEqual(["lite", "full", "dev"]);
+    for (const { patch, valid } of fixture.appVariants.cases) {
+      const value = (patch as Record<string, unknown>).appVariants;
+      const accepted = !Object.hasOwn(patch, "appVariants") || (Array.isArray(value)
+        && value.length > 0 && new Set(value).size === value.length
+        && value.every(item => (EXTENSION_APP_VARIANTS as readonly unknown[]).includes(item)));
+      expect(accepted, JSON.stringify(patch)).toBe(valid);
+    }
+  });
+
   it("validates exact project-file conditions without scanning or case folding", () => {
     for (const { path, valid } of fixture.languageServerProjectFiles.cases) {
       expect(isExtensionProjectFilePath(path), path).toBe(valid);
@@ -541,6 +553,8 @@ describe("public extension SDK", () => {
       .toEqualTypeOf<ExtensionRuntimeRequirement[] | undefined>();
     expectTypeOf<ExtensionManifest["required"]>()
       .toEqualTypeOf<boolean | undefined>();
+    expectTypeOf<ExtensionManifest["appVariants"]>()
+      .toEqualTypeOf<Array<"lite" | "full" | "dev"> | undefined>();
     expectTypeOf<ExtensionRuntimeRequirement>().toEqualTypeOf<{
       readonly id: string;
       readonly runtime: string;

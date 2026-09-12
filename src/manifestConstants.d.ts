@@ -1,3 +1,5 @@
+export declare const EXTENSION_APP_VARIANTS: readonly ["lite", "full", "dev"];
+
 export declare const EXTENSION_PERMISSIONS: readonly [
   "authentication",
   "commands.execute",

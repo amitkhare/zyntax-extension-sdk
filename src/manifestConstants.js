@@ -1,3 +1,6 @@
+/** App editions accepted by the optional signed manifest appVariants restriction. */
+export const EXTENSION_APP_VARIANTS = Object.freeze(["lite", "full", "dev"]);
+
 /** Canonical permission names accepted by every extension manifest layer. */
 export const EXTENSION_PERMISSIONS = Object.freeze([
   "authentication",

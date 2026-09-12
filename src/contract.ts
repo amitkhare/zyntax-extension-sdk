@@ -36,6 +36,7 @@ export { EXTENSION_PROVIDER_METHODS } from "./providerMethods.js";
 export type { ExtensionProviderMethod } from "./providerMethods.js";
 export * from "./hostMethods.js";
 export {
+  EXTENSION_APP_VARIANTS,
   EXTENSION_ACTIVATION_PROVIDER_KINDS,
   EXTENSION_CONTRIBUTION_FIELDS,
   EXTENSION_DEVELOPMENT_STACK_MAX_CONTRIBUTIONS,
