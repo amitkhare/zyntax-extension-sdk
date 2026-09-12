@@ -75,6 +75,12 @@ unary exclusion `-`, intersection `&`, alternatives `|` and comma, and binary
 subtraction. Hyphens inside scope names remain literal: `a-b` is one name,
 while `a -b` subtracts `b`.
 
+In host matching, a whole dot-separated `*` atom matches one scope atom; normal
+prefix specialization can still match further atoms. For example, `source.*`
+matches `source.js` and `source.js.embedded`, but not `source`. Asterisks embedded
+inside an atom remain literal, not a general glob expression. The parser retains
+the existing scope-name vocabulary without rewriting it.
+
 Paths bind first. Inside a group or selector, `|`, `&`, and binary `-` bind
 equally and associate left to right, as in TextMate; comma is a lower-precedence
 alternative. Thus `a | b - c` means `(a | b) - c`. Adjacent scope names form a

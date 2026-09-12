@@ -1,5 +1,7 @@
 {
   "cases": [
+    { "selector": "*", "valid": true, "ast": { "type": "path", "scopes": ["*"], "relations": [] } },
+    { "selector": "string - source.*", "valid": true },
     {
       "selector": "source.js",
       "valid": true,
