@@ -420,6 +420,23 @@ export interface ExtensionViewPresentationEvent {
   readonly presentation: WorkbenchPresentation;
 }
 
+/**
+ * Explorer project closure or replacement affecting this extension's selected projects.
+ * Hidden views receive this event too. The host keeps the renderer and project references
+ * alive so the extension can stop and release its owned work through the normal APIs.
+ */
+export interface ExtensionViewProjectLifecycleEvent {
+  readonly type: "projectLifecycle";
+  /** Monotonically increases for the host lifetime; revisions may be skipped or coalesced. */
+  readonly revision: number;
+  /**
+   * Opaque IDs owned by this extension for the closed Explorer project or its descendants.
+   * Unrelated selected projects are excluded. Notices queued before bridge readiness may
+   * combine closed IDs from several revisions into one event with the latest revision.
+   */
+  readonly closedProjects: readonly string[];
+}
+
 export type ExtensionViewHostMessage =
   | ExtensionViewHostRequest
   | ExtensionViewHostCancel;
@@ -427,7 +444,8 @@ export type ExtensionViewHostMessage =
 export type ExtensionViewHostResponse =
   | ExtensionViewHostSuccess
   | ExtensionViewHostFailure
-  | ExtensionViewPresentationEvent;
+  | ExtensionViewPresentationEvent
+  | ExtensionViewProjectLifecycleEvent;
 
 /** Exact origin-scoped object injected only by the dedicated native extension-view renderer. */
 export interface ExtensionViewHostBridge {

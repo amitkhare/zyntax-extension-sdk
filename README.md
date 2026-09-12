@@ -666,6 +666,21 @@ apply live. Isolated custom views use `presentation()`, revision-bound `resolveI
 and `presentation` events for the same colors, typography and icons. They receive
 no app component imports, stylesheet paths or native asset paths.
 
+SDK `1.0.28` adds the generic `projectLifecycle` event to the existing custom-view
+message bridge. When Explorer closes or replaces its project, `closedProjects`
+contains only this extension's selected project IDs matching that root or a
+descendant; unrelated selections are not included. `revision` increases for the
+host lifetime, but a view may skip revisions. Queued notices before bridge readiness
+can combine closed IDs and use the latest revision. Trust-only changes do not close
+projects. The shared conformance fixture includes single-project and combined notices.
+
+Listen before restoring selected project state, retaining notices until restoration
+finishes, and stop/release work for matching IDs through the ordinary task and project
+APIs. Hidden views receive the event too; it does not destroy the renderer or revoke
+references needed for cleanup. Hiding a panel is still presentation-only and emits
+no project closure event. This event grants no additional access and exposes no
+other extension's selections or private paths.
+
 ### Optional system file actions
 
 SDK `1.0.24` adds `kind: "fileOpener"` in `contributes.workbench`, with

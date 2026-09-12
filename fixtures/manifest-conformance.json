@@ -1,6 +1,12 @@
 {
   "formatVersion": 1,
   "hostVersion": "0.9.0",
+  "customViewEvents": {
+    "projectLifecycle": [
+      { "type": "projectLifecycle", "revision": 1, "closedProjects": ["project-selected-root"] },
+      { "type": "projectLifecycle", "revision": 4, "closedProjects": ["project-selected-root", "project-selected-child"] }
+    ]
+  },
   "appVariants": {
     "cases": [
       { "patch": {}, "valid": true },

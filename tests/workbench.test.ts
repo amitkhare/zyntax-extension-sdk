@@ -1,4 +1,6 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
+import fixture from "../fixtures/manifest-conformance.json" with { type: "json" };
+import type { ExtensionViewProjectLifecycleEvent } from "../src/index.js";
 import type {
   ExtensionViewHostResponse,
   ExtensionWorkbenchApi,
@@ -43,5 +45,29 @@ describe("workbench public contract", () => {
       .toEqualTypeOf<WorkbenchPresentationColor>();
     expectTypeOf<Extract<keyof WorkbenchPresentation, "nativeBridge" | "assetsPath">>()
       .toEqualTypeOf<never>();
+  });
+
+  it("exports owner-scoped project lifecycle notices on the existing view bridge", () => {
+    expectTypeOf<
+      Extract<ExtensionViewHostResponse, { type: "projectLifecycle" }>
+    >().toEqualTypeOf<ExtensionViewProjectLifecycleEvent>();
+    expectTypeOf<keyof ExtensionViewProjectLifecycleEvent>()
+      .toEqualTypeOf<"type" | "revision" | "closedProjects">();
+    expectTypeOf<ExtensionViewProjectLifecycleEvent["closedProjects"]>()
+      .toEqualTypeOf<readonly string[]>();
+
+    const received: ExtensionViewHostResponse = {
+      type: "projectLifecycle",
+      revision: 4,
+      closedProjects: ["project-selected-root", "project-selected-child"],
+    };
+    expect(received).toEqual(fixture.customViewEvents.projectLifecycle[1]);
+    for (const event of fixture.customViewEvents.projectLifecycle) {
+      expect(event.type).toBe("projectLifecycle");
+      expect(Number.isSafeInteger(event.revision) && event.revision > 0).toBe(true);
+      expect(event.closedProjects.length).toBeGreaterThan(0);
+      expect(new Set(event.closedProjects).size).toBe(event.closedProjects.length);
+      expect(Object.keys(event).sort()).toEqual(["closedProjects", "revision", "type"]);
+    }
   });
 });
