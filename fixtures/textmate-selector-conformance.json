@@ -1,0 +1,684 @@
+{
+  "cases": [
+    {
+      "selector": "source.js",
+      "valid": true,
+      "ast": {
+        "type": "path",
+        "scopes": [
+          "source.js"
+        ],
+        "relations": []
+      }
+    },
+    {
+      "selector": "source.js meta.function string",
+      "valid": true,
+      "ast": {
+        "type": "path",
+        "scopes": [
+          "source.js",
+          "meta.function",
+          "string"
+        ],
+        "relations": [
+          "descendant",
+          "descendant"
+        ]
+      }
+    },
+    {
+      "selector": "source.js > meta.function string",
+      "valid": true,
+      "ast": {
+        "type": "path",
+        "scopes": [
+          "source.js",
+          "meta.function",
+          "string"
+        ],
+        "relations": [
+          "child",
+          "descendant"
+        ]
+      }
+    },
+    {
+      "selector": "source.js>string",
+      "valid": true,
+      "ast": {
+        "type": "path",
+        "scopes": [
+          "source.js",
+          "string"
+        ],
+        "relations": [
+          "child"
+        ]
+      }
+    },
+    {
+      "selector": "source\tstring",
+      "valid": true,
+      "ast": {
+        "type": "path",
+        "scopes": [
+          "source",
+          "string"
+        ],
+        "relations": [
+          "descendant"
+        ]
+      }
+    },
+    {
+      "selector": "constant.numeric - match",
+      "valid": true,
+      "ast": {
+        "type": "all",
+        "terms": [
+          {
+            "type": "path",
+            "scopes": [
+              "constant.numeric"
+            ],
+            "relations": []
+          },
+          {
+            "type": "not",
+            "term": {
+              "type": "path",
+              "scopes": [
+                "match"
+              ],
+              "relations": []
+            }
+          }
+        ]
+      }
+    },
+    {
+      "selector": "meta.tag string -source -punctuation",
+      "valid": true,
+      "ast": {
+        "type": "all",
+        "terms": [
+          {
+            "type": "all",
+            "terms": [
+              {
+                "type": "path",
+                "scopes": [
+                  "meta.tag",
+                  "string"
+                ],
+                "relations": [
+                  "descendant"
+                ]
+              },
+              {
+                "type": "not",
+                "term": {
+                  "type": "path",
+                  "scopes": [
+                    "source"
+                  ],
+                  "relations": []
+                }
+              }
+            ]
+          },
+          {
+            "type": "not",
+            "term": {
+              "type": "path",
+              "scopes": [
+                "punctuation"
+              ],
+              "relations": []
+            }
+          }
+        ]
+      }
+    },
+    {
+      "selector": "punctuation -(source string source punctuation)",
+      "valid": true,
+      "ast": {
+        "type": "all",
+        "terms": [
+          {
+            "type": "path",
+            "scopes": [
+              "punctuation"
+            ],
+            "relations": []
+          },
+          {
+            "type": "not",
+            "term": {
+              "type": "path",
+              "scopes": [
+                "source",
+                "string",
+                "source",
+                "punctuation"
+              ],
+              "relations": [
+                "descendant",
+                "descendant",
+                "descendant"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "selector": "(source.js | source.ts) & string - comment",
+      "valid": true,
+      "ast": {
+        "type": "all",
+        "terms": [
+          {
+            "type": "all",
+            "terms": [
+              {
+                "type": "any",
+                "terms": [
+                  {
+                    "type": "path",
+                    "scopes": [
+                      "source.js"
+                    ],
+                    "relations": []
+                  },
+                  {
+                    "type": "path",
+                    "scopes": [
+                      "source.ts"
+                    ],
+                    "relations": []
+                  }
+                ]
+              },
+              {
+                "type": "path",
+                "scopes": [
+                  "string"
+                ],
+                "relations": []
+              }
+            ]
+          },
+          {
+            "type": "not",
+            "term": {
+              "type": "path",
+              "scopes": [
+                "comment"
+              ],
+              "relations": []
+            }
+          }
+        ]
+      }
+    },
+    {
+      "selector": "a | b - c",
+      "valid": true,
+      "ast": {
+        "type": "all",
+        "terms": [
+          {
+            "type": "any",
+            "terms": [
+              {
+                "type": "path",
+                "scopes": [
+                  "a"
+                ],
+                "relations": []
+              },
+              {
+                "type": "path",
+                "scopes": [
+                  "b"
+                ],
+                "relations": []
+              }
+            ]
+          },
+          {
+            "type": "not",
+            "term": {
+              "type": "path",
+              "scopes": [
+                "c"
+              ],
+              "relations": []
+            }
+          }
+        ]
+      }
+    },
+    {
+      "selector": "a - b | c",
+      "valid": true,
+      "ast": {
+        "type": "any",
+        "terms": [
+          {
+            "type": "all",
+            "terms": [
+              {
+                "type": "path",
+                "scopes": [
+                  "a"
+                ],
+                "relations": []
+              },
+              {
+                "type": "not",
+                "term": {
+                  "type": "path",
+                  "scopes": [
+                    "b"
+                  ],
+                  "relations": []
+                }
+              }
+            ]
+          },
+          {
+            "type": "path",
+            "scopes": [
+              "c"
+            ],
+            "relations": []
+          }
+        ]
+      }
+    },
+    {
+      "selector": "a, b & c",
+      "valid": true,
+      "ast": {
+        "type": "any",
+        "terms": [
+          {
+            "type": "path",
+            "scopes": [
+              "a"
+            ],
+            "relations": []
+          },
+          {
+            "type": "all",
+            "terms": [
+              {
+                "type": "path",
+                "scopes": [
+                  "b"
+                ],
+                "relations": []
+              },
+              {
+                "type": "path",
+                "scopes": [
+                  "c"
+                ],
+                "relations": []
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "selector": "a | b & c",
+      "valid": true,
+      "ast": {
+        "type": "all",
+        "terms": [
+          {
+            "type": "any",
+            "terms": [
+              {
+                "type": "path",
+                "scopes": [
+                  "a"
+                ],
+                "relations": []
+              },
+              {
+                "type": "path",
+                "scopes": [
+                  "b"
+                ],
+                "relations": []
+              }
+            ]
+          },
+          {
+            "type": "path",
+            "scopes": [
+              "c"
+            ],
+            "relations": []
+          }
+        ]
+      }
+    },
+    {
+      "selector": "a - (b, c)",
+      "valid": true,
+      "ast": {
+        "type": "all",
+        "terms": [
+          {
+            "type": "path",
+            "scopes": [
+              "a"
+            ],
+            "relations": []
+          },
+          {
+            "type": "not",
+            "term": {
+              "type": "any",
+              "terms": [
+                {
+                  "type": "path",
+                  "scopes": [
+                    "b"
+                  ],
+                  "relations": []
+                },
+                {
+                  "type": "path",
+                  "scopes": [
+                    "c"
+                  ],
+                  "relations": []
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "selector": "-comment",
+      "valid": true,
+      "ast": {
+        "type": "not",
+        "term": {
+          "type": "path",
+          "scopes": [
+            "comment"
+          ],
+          "relations": []
+        }
+      }
+    },
+    {
+      "selector": "-(comment | string)",
+      "valid": true,
+      "ast": {
+        "type": "not",
+        "term": {
+          "type": "any",
+          "terms": [
+            {
+              "type": "path",
+              "scopes": [
+                "comment"
+              ],
+              "relations": []
+            },
+            {
+              "type": "path",
+              "scopes": [
+                "string"
+              ],
+              "relations": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "selector": "a - -b",
+      "valid": true,
+      "ast": {
+        "type": "all",
+        "terms": [
+          {
+            "type": "path",
+            "scopes": [
+              "a"
+            ],
+            "relations": []
+          },
+          {
+            "type": "not",
+            "term": {
+              "type": "not",
+              "term": {
+                "type": "path",
+                "scopes": [
+                  "b"
+                ],
+                "relations": []
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "selector": "a-b",
+      "valid": true,
+      "ast": {
+        "type": "path",
+        "scopes": [
+          "a-b"
+        ],
+        "relations": []
+      }
+    },
+    {
+      "selector": ".source * source.*.embedded",
+      "valid": true
+    },
+    {
+      "selector": "((((((((a))))))))",
+      "valid": true
+    },
+    {
+      "selector": "(((((((((a)))))))))",
+      "valid": false
+    },
+    {
+      "selector": "((((((((-a))))))))",
+      "valid": false
+    },
+    {
+      "selector": "a a a a a a a a a a a a a a a a a a a a a a a a",
+      "valid": true
+    },
+    {
+      "selector": "a a a a a a a a a a a a a a a a a a a a a a a a a",
+      "valid": false
+    },
+    {
+      "selector": "a>a>a>a>a>a>a>a>a>a>a>a",
+      "valid": true
+    },
+    {
+      "selector": "a>a>a>a>a>a>a>a>a>a>a>a>a",
+      "valid": false
+    },
+    {
+      "selector": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "valid": true
+    },
+    {
+      "selector": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "valid": false
+    },
+    {
+      "selector": "a - a - a - a - a - a - a - a - a - a - a - a - a - a - a - a - a - a - a - a - a - a",
+      "valid": true
+    },
+    {
+      "selector": "a - a - a - a - a - a - a - a - a - a - a - a - a - a - a - a - a - a - a - a - a - a - a",
+      "valid": false
+    },
+    {
+      "selector": null,
+      "valid": false
+    },
+    {
+      "selector": 3,
+      "valid": false
+    },
+    {
+      "selector": [],
+      "valid": false
+    },
+    {
+      "selector": {},
+      "valid": false
+    },
+    {
+      "selector": "",
+      "valid": false
+    },
+    {
+      "selector": " source",
+      "valid": false
+    },
+    {
+      "selector": "source ",
+      "valid": false
+    },
+    {
+      "selector": "source\nstring",
+      "valid": false
+    },
+    {
+      "selector": "source\rstring",
+      "valid": false
+    },
+    {
+      "selector": "source\u0000string",
+      "valid": false
+    },
+    {
+      "selector": "source ^ string",
+      "valid": false
+    },
+    {
+      "selector": "^source",
+      "valid": false
+    },
+    {
+      "selector": "source$",
+      "valid": false
+    },
+    {
+      "selector": "L:source",
+      "valid": false
+    },
+    {
+      "selector": "R:(source)",
+      "valid": false
+    },
+    {
+      "selector": "B:source",
+      "valid": false
+    },
+    {
+      "selector": "source + string",
+      "valid": false
+    },
+    {
+      "selector": "source && string",
+      "valid": false
+    },
+    {
+      "selector": "source || string",
+      "valid": false
+    },
+    {
+      "selector": "source,,string",
+      "valid": false
+    },
+    {
+      "selector": ",source",
+      "valid": false
+    },
+    {
+      "selector": "source,",
+      "valid": false
+    },
+    {
+      "selector": "()",
+      "valid": false
+    },
+    {
+      "selector": "(source",
+      "valid": false
+    },
+    {
+      "selector": "source)",
+      "valid": false
+    },
+    {
+      "selector": "source (string)",
+      "valid": false
+    },
+    {
+      "selector": "(source) string",
+      "valid": false
+    },
+    {
+      "selector": "source -",
+      "valid": false
+    },
+    {
+      "selector": "--source",
+      "valid": false
+    },
+    {
+      "selector": "source -()",
+      "valid": false
+    },
+    {
+      "selector": "source >",
+      "valid": false
+    },
+    {
+      "selector": " > source",
+      "valid": false
+    },
+    {
+      "selector": "> source",
+      "valid": false
+    },
+    {
+      "selector": "source >> string",
+      "valid": false
+    },
+    {
+      "selector": "source > -string",
+      "valid": false
+    },
+    {
+      "selector": "source > (string)",
+      "valid": false
+    }
+  ]
+}

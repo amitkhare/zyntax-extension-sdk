@@ -64,6 +64,43 @@ and activating packages, including required dependencies. The existing package
 signature protects this plain JSON field; it is not an encrypted licensing system.
 Tool/runtime requirements and `engines.zyntax` remain separate checks.
 
+## Theme scope selectors
+
+`parseTextMateSelector(value)` validates a nonempty, trimmed selector and returns
+an immutable `TextMateSelector` AST; invalid or unsupported syntax throws
+`TypeError`. It has no editor or matching dependency. This bounded subset of
+[TextMate scope selectors](https://macromates.com/textmate/manual/references#scope-selector)
+supports descendant paths, direct-parent `>`, wildcard scope names, parentheses,
+unary exclusion `-`, intersection `&`, alternatives `|` and comma, and binary
+subtraction. Hyphens inside scope names remain literal: `a-b` is one name,
+while `a -b` subtracts `b`.
+
+Paths bind first. Inside a group or selector, `|`, `&`, and binary `-` bind
+equally and associate left to right, as in TextMate; comma is a lower-precedence
+alternative. Thus `a | b - c` means `(a | b) - c`. Adjacent scope names form a
+path; separate grouped expressions require an operator. Anchors (`^`, `$`),
+side/injection filters (`L:`, `R:`, `B:`), and unsupported characters are
+rejected rather than ignored. Only spaces and tabs are internal whitespace.
+
+The AST uses `path` nodes with `scopes` and between-scope `relations`
+(`descendant` or `child`), `any`/`all` nodes with `terms`, and `not` nodes
+with a `term`. Subtraction is `all(left, not(right))`; groups retain their
+meaning without a wrapper node. Host matchers evaluate exclusions against the
+same scope stack as positive paths, not against a fallback stack after a miss.
+Only matching positive paths contribute specificity; negated conditions filter
+matches. The SDK defines syntax, not a rendering engine or VS Code theme-rendering
+equivalence.
+
+`TEXTMATE_SELECTOR_RULES` limits input to 512 UTF-16 code units, 24 total scope
+names plus child operators, 64 emitted AST nodes, and nesting depth 8. A group
+or unary minus increases nesting by one from zero; binary operators do not.
+Paths, binary combinations, and each unary or subtraction negation count as
+nodes; parentheses do not. Existing ASCII scope-name syntax is preserved in
+`scopePattern`. The build exports these rules as `textMateSelectors` in
+`runtime-contract.json`. JavaScript and native validators consume the same
+`textmate-selector-conformance.json` fixture, including boundary and AST cases.
+Unscoped theme defaults use the asset's empty scope list, not an empty selector.
+
 ## Cooperative cancellation
 
 Every provider cancellation token exposes `checkpoint()`. Awaiting it yields

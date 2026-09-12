@@ -39,6 +39,7 @@ for (const file of [
 
 const { EXTENSION_PROVIDER_METHODS } = await import("../dist/providerMethods.js");
 const { FILE_OPENER_RULES } = await import("../dist/fileOpeners.js");
+const { TEXTMATE_SELECTOR_RULES } = await import("../dist/textMateSelector.js");
 const { EXTENSION_HOST_API_METHODS, EXTENSION_HOST_API_INTERACTIVE_METHODS } =
   await import("../dist/hostMethods.js");
 await writeFile(resolve(distRoot, "runtime-contract.json"), JSON.stringify({
@@ -46,4 +47,5 @@ await writeFile(resolve(distRoot, "runtime-contract.json"), JSON.stringify({
   hostMethods: EXTENSION_HOST_API_METHODS,
   interactiveHostMethods: EXTENSION_HOST_API_INTERACTIVE_METHODS,
   fileOpeners: FILE_OPENER_RULES,
+  textMateSelectors: TEXTMATE_SELECTOR_RULES,
 }, null, 2) + "\n");
