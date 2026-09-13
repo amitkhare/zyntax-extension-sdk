@@ -1,11 +1,5 @@
 import type { ExtensionCancellationToken, ExtensionJsonObject } from "../contract.js";
 import type { ExtensionProjectScope } from "./projectContexts.js";
-import type { ExtensionTaskEnvironmentValue } from "./taskSessions.js";
-
-/** Only vault-backed references enter a prepared process; never raw credentials or host paths. */
-export interface ExtensionProcessInputs {
-  readonly environment: Readonly<Record<string, Extract<ExtensionTaskEnvironmentValue, { readonly kind: "secret" }>>>;
-}
 
 export interface ExtensionProcessPrepareRequest {
   /** Must resolve to the current trusted Explorer project. */
@@ -14,8 +8,6 @@ export interface ExtensionProcessPrepareRequest {
   readonly tool: string;
   /** A signed entrypoint in that tool; no caller-supplied argv or executable. */
   readonly entrypoint: string;
-  /** Requires secrets permission; reserved execution/routing environment keys are rejected. */
-  readonly inputs?: ExtensionProcessInputs;
   /** Opts this native runtime into the private credential control channel. Requires secrets. */
   readonly credentials?: true;
 }
@@ -53,8 +45,8 @@ export interface ExtensionProcessUpdate {
 export interface ExtensionProcessesApi {
   /**
    * Prepare this extension's own declared managed tool without starting it. Requires
-   * processes.execute and tools.execute; tool identity, entrypoint and optional secret
-   * references are validated natively and checked again when the process is opened.
+   * processes.execute and tools.execute; tool identity, entrypoint and optional credential
+   * channel permission are validated natively and checked again when the process is opened.
    * HOME remains generation-scoped tool scratch. With storage permission, native
    * jobs, tasks and services also receive ZYNTAX_EXTENSION_DATA: a host-assigned
    * owner-stable directory for durable state. Without storage permission no data

@@ -646,16 +646,15 @@ consumer and project. Tagged document paths remain symbolic. Callers cannot clai
 another provider's executable or managed-tool authority.
 
 An extension may prepare its own signed managed tool with
-`processes.execute.prepare({ project, tool, entrypoint, inputs? }, cancellation)`.
+`processes.execute.prepare({ project, tool, entrypoint, credentials? }, cancellation)`.
 The tool must be in its manifest's `toolRequirements` with `process.framed-json`;
 both `processes.execute` and `tools.execute` permissions are required. No executable
 path or dynamic arguments are accepted. Preparation does not start a process and
 returns an opaque, one-use ticket bound to the exact calling principal, activation
-and current trusted Explorer project. Optional `inputs.environment` values are
-only `{ kind: "secret", secret: reference.id }`, require `secrets` permission, and
-are resolved into native process environment without returning credentials to the
-view. Runtime/routing environment keys are reserved. Native start rechecks the
-manifest, entrypoint, project and credential references.
+and current trusted Explorer project. `credentials: true` enables the native-only
+credential channel described below and requires `secrets` permission. No environment
+bindings are accepted. Native start rechecks the manifest, entrypoint, project and
+credential-channel permission.
 Native jobs, tasks and services with the owner's `storage` permission receive
 `ZYNTAX_EXTENSION_DATA`, an app-private directory owned by the stable extension ID,
 without exposing a path API to the view or accepting a caller-selected directory.

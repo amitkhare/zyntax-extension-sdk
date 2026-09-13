@@ -9,6 +9,7 @@ import {
   type ExtensionTaskEnvironmentValue,
   type ExtensionTaskSessionUpdate,
   type ExtensionWorkspaceDocumentRequest,
+  type ExtensionProcessPrepareRequest,
 } from "../src/index.js";
 
 it("uses explicit project scope and owner-scoped task lifecycle in the single host contract", () => {
@@ -21,6 +22,11 @@ it("uses explicit project scope and owner-scoped task lifecycle in the single ho
     .toEqualTypeOf<ExtensionWorkspaceDocumentRequest>();
   expectTypeOf<Awaited<ReturnType<ExtensionHostCapabilityMap["tasks.execute"]["observe"]>>>()
     .toEqualTypeOf<ExtensionTaskSessionUpdate>();
+});
+
+it("prepares framed runtimes with one credential channel and no environment binding API", () => {
+  expectTypeOf<keyof ExtensionProcessPrepareRequest>().toEqualTypeOf<"project" | "tool" | "entrypoint" | "credentials">();
+  expectTypeOf<ExtensionProcessPrepareRequest["credentials"]>().toEqualTypeOf<true | undefined>();
 });
 
 it("supports captured terminal commands and confines secret bindings to process environment", () => {
