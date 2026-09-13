@@ -1,4 +1,6 @@
 import { EXTENSION_API_VERSION } from "./contracts/manifest.js";
+export { createRuntimeCredentialClient } from './runtimeCredentials.js';
+export type { RuntimeCredentialClient, RuntimeCredentialValue } from './runtimeCredentials.js';
 import type { ExtensionManifest } from "./contracts/manifest.js";
 import type {
   AgentHarnessAdapter,

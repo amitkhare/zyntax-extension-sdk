@@ -645,6 +645,25 @@ configuration plus an opaque single-use process ticket sealed to the provider,
 consumer and project. Tagged document paths remain symbolic. Callers cannot claim
 another provider's executable or managed-tool authority.
 
+An extension may prepare its own signed managed tool with
+`processes.execute.prepare({ project, tool, entrypoint, inputs? }, cancellation)`.
+The tool must be in its manifest's `toolRequirements` with `process.framed-json`;
+both `processes.execute` and `tools.execute` permissions are required. No executable
+path or dynamic arguments are accepted. Preparation does not start a process and
+returns an opaque, one-use ticket bound to the exact calling principal, activation
+and current trusted Explorer project. Optional `inputs.environment` values are
+only `{ kind: "secret", secret: reference.id }`, require `secrets` permission, and
+are resolved into native process environment without returning credentials to the
+view. Runtime/routing environment keys are reserved. Native start rechecks the
+manifest, entrypoint, project and credential references.
+Native jobs, tasks and services with the owner's `storage` permission receive
+`ZYNTAX_EXTENSION_DATA`, an app-private directory owned by the stable extension ID,
+without exposing a path API to the view or accepting a caller-selected directory.
+Without that permission no data directory is created or exposed. Store durable
+sessions there, not in generation-scoped managed `HOME`. It survives project
+closure, disable, updates and extension reset; uninstall removes it only after
+process cleanup. This does not create an OS sandbox.
+
 `processes.execute.open(ticket)` consumes that authority to open a managed
 Content-Length framed JSON process. Inspect its returned `state` and `error`: a
 startup failure after a managed handle exists can return a terminated snapshot,
@@ -690,7 +709,65 @@ bounded, and remain subject to the same project-confined `readText` boundary.
 project. The isolated provider never receives a native path or direct filesystem
 access. `workspace.write.applyEdits` likewise takes `{ project, edits }`.
 
+`workspace.read.snapshot({ project, uri }, cancellation)` reads the current Explorer
+project's UTF-8 text, including unsaved editor changes, normalized to LF. It returns
+`{ uri, exists, text, revision, dirty }`; a file absent from both disk and editors
+has empty text and `exists: false`. The opaque revision binds this owner, project
+activation and exact disk/editor state. Text is limited to 512 KiB; binary files,
+non-file targets and symlinks fail explicitly. `listDirectory({ project, uri },
+cancellation)` lists direct files and directories, including empty folders, as
+`{ uri, name, kind }`. It never follows or returns symlinks and fails above 1024
+entries or 512 KiB instead of silently truncating.
+
+`workspace.write.writeText({ project, uri, revision, text }, cancellation)` proposes
+one replacement or new file in the current trusted Explorer project. The host
+shows a themed diff overlay; approval saves atomically and updates an open editor
+through its normal undo/persistence machinery. Unsaved changes are included in the
+review and explicitly saved on approval. Parent directories must already exist.
+Changed revisions, revoked access and pre-commit cancellation fail before writing;
+the caller must read again rather than blindly retry. Dismissal returns
+`{ applied: false }`. A committed write returns `{ applied: true, snapshot? }`;
+the snapshot is omitted if cancellation or project closure prevents a fresh read
+after the definitive commit. Existing newline conventions are preserved.
+
 ## Project panels and owned tasks
+
+### Native runtime credential channel
+
+A managed process prepared with `credentials: true` and the extension's `secrets`
+permission can use `createRuntimeCredentialClient({ send })` inside its native
+worker. `send` writes its existing Content-Length framed stdout transport. Pass
+stdin JSON to `client.accept(message)` before ordinary protocol dispatch; consumed
+responses must never enter UI events, logs or transcripts. Call `dispose()` when
+the worker shuts down. No Node-specific import is required by the helper.
+
+The reserved envelope is `{ "$zyntax": "credentials", id, method, ...fields }`.
+Native code consumes it before output retention or bridge events and replies on
+ordered stdin as `{ "$zyntax": "credentials", id, ok: true, result }` or
+`{ "$zyntax": "credentials", id, ok: false, error }`, with `error` limited to
+`invalid`, `conflict` or `unavailable`. Public `processes.execute.send` cannot send
+reserved envelopes. Ownership and activation come from the admitted job, never
+from an envelope field. Access expires on process stop, owner revocation or project
+closure. The encrypted runtime namespace is separate from UI secret references
+and existing account stores; uninstall removes it after process cleanup.
+
+`get(key)` returns `{ value: string | null, revision: string | null }`.
+`set(key, value, revision)` requires that exact revision (null for absent) and
+returns `{ revision }`; `delete(key, revision)` has the same comparison.
+`list()` returns sorted keys only. Concurrent updates fail with an explicit
+conflict, not an implicit retry. Keys are 1–128 control-free characters, values
+are at most 32 KiB UTF-8, and the owner store is bounded to 128 keys/256 KiB encoded.
+Control frames are bounded to 256 KiB; the helper allows 32 pending calls with a
+30-second deadline. A timeout does not undo a committed write; read before retrying.
+
+For private interactive input, request an ordinary host-owned `secrets.request`
+prompt through the extension controller and send only its opaque reference to the
+worker. `resolve(reference, { consume: true })` returns the value directly from
+native code and atomically removes that one-use reference. The wire request carries
+`method: "resolve"`, `reference` and boolean `consume`; omitting helper options
+uses false for reusable references. No secret plaintext crosses provider/view RPC.
+This boundary is not an OS sandbox against a malicious native program that prints
+or transmits credentials it was explicitly granted.
 
 `projects.select` opens the host's location picker without changing the explorer.
 Relative input is explorer-relative; `~/` uses terminal home. Selection keys are
@@ -718,6 +795,15 @@ after a monotonic cursor and returns bounded output plus current lifecycle state
 it does not poll or stop work when cancelled. Closing a panel does not stop builds.
 Exit frees the PTY, results stay until released, and extension disposal stops owned
 work. Root changes affect future launches, not already-running tasks.
+
+Command/runtime task arguments accept ordinary script text, including tab, CR and
+LF: at most 32 caller arguments, 16 KiB UTF-8 per literal and 64 KiB total resolved
+argv, including native path bindings and runtime prefixes. NUL, other ISO control
+characters and malformed Unicode are rejected. Managed-tool arguments and all
+environment literals keep their existing 512-code-unit, control-free policy.
+This does not change executable selection, project trust, permissions or routing.
+`isExtensionTaskArgumentLiteral` and the `EXTENSION_TASK_MAX_ARGUMENT_BYTES` /
+`EXTENSION_TASK_MAX_ARGUMENTS_BYTES` constants expose the command/runtime limits.
 
 `workbench` updates/reveals/closes manifest-declared panels, including `dialog`
 placement. Reuse list/tree/form/detail descriptors and host controls, not a separate

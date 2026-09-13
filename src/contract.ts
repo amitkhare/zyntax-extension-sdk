@@ -997,6 +997,18 @@ export interface ExtensionQuickOpenProvider extends ExtensionDisposable {
 }
 
 export interface ExtensionWorkspaceReadApi {
+  /** Lists direct files and directories (including empty directories) of the current
+   * Explorer project. Fails explicitly above 1024 entries or 512 KiB; never returns
+   * a silently truncated list. No symlinks are followed or returned.
+   */
+  listDirectory(request: ExtensionWorkspaceDocumentRequest, cancellation: ExtensionCancellationToken): Promise<readonly ExtensionWorkspaceDirectoryEntry[]>;
+  /** Reads the current Explorer project's UTF-8 document, including unsaved editor
+   * text, normalized to LF. A file absent from both disk and editors returns exists:false
+   * and empty text. The opaque revision
+   * belongs to this extension owner, project activation and exact disk/editor state.
+   * Text is bounded to 512 KiB UTF-8; symlinks, binary and non-file targets fail.
+   */
+  snapshot(request: ExtensionWorkspaceDocumentRequest, cancellation: ExtensionCancellationToken): Promise<ExtensionWorkspaceSnapshot>;
   /** Returns the canonical project-relative path for a document, or null outside the project. */
   relativePath(
     request: ExtensionWorkspaceDocumentRequest,
@@ -1038,7 +1050,41 @@ export interface ExtensionWorkspaceWriteEdit {
   readonly edits: readonly (ExtensionOffsetRange & { readonly text: string })[];
 }
 
+export interface ExtensionWorkspaceSnapshot {
+  readonly uri: string;
+  readonly exists: boolean;
+  readonly text: string;
+  readonly revision: string;
+  readonly dirty: boolean;
+}
+
+export interface ExtensionWorkspaceDirectoryEntry {
+  readonly uri: string;
+  readonly name: string;
+  readonly kind: 'file' | 'directory';
+}
+
+export interface ExtensionWorkspaceWriteTextRequest extends ExtensionWorkspaceDocumentRequest {
+  /** Exact revision returned by snapshot. A changed file/editor requires a fresh read. */
+  readonly revision: string;
+  readonly text: string;
+}
+
+export type ExtensionWorkspaceWriteTextResult =
+  | { readonly applied: false }
+  | { readonly applied: true; readonly snapshot?: ExtensionWorkspaceSnapshot };
+
 export interface ExtensionWorkspaceWriteApi {
+  /** Reviews a replacement or new UTF-8 file in the host's themed diff dialog.
+   * Only the current trusted Explorer project is supported. Existing parent
+   * directories are required; no symlink is followed. Rejects stale revisions,
+   * including edits made during review. Approval writes atomically and updates
+   * the open editor, preserving its normal undo history and newline convention.
+   * Unsaved text is explicitly included in the review and persisted on approval.
+   * User dismissal returns applied:false; cancellation/conflicts reject. Once the
+   * native commit succeeds its result is definitive, even if cancellation follows.
+   */
+  writeText(request: ExtensionWorkspaceWriteTextRequest, cancellation: ExtensionCancellationToken): Promise<ExtensionWorkspaceWriteTextResult>;
   applyEdits(
     request: {
       readonly project: ExtensionProjectScope;

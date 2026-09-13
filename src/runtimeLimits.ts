@@ -24,6 +24,23 @@ export const EXTENSION_DIAGNOSTICS_MAX_TOTAL_BYTES = 16 * 1024 * 1024;
 /** Maximum task descriptors returned by one task provider invocation. */
 export const EXTENSION_TASK_PROVIDER_MAX_ITEMS = 4_096;
 
+/** Command/runtime task literals only; managed-tool and environment literals keep their strict policy. */
+export const EXTENSION_TASK_MAX_ARGUMENT_BYTES = 16 * 1024;
+/** Aggregate UTF-8 bytes of command/runtime argv, including natively resolved paths and runtime prefixes. */
+export const EXTENSION_TASK_MAX_ARGUMENTS_BYTES = 64 * 1024;
+
+export function isExtensionTaskArgumentLiteral(value: unknown): value is string {
+  if (typeof value !== "string" || /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f-\u009f]/u.test(value)) return false;
+  for (let index = 0; index < value.length; index += 1) {
+    const code = value.charCodeAt(index);
+    if (code >= 0xd800 && code <= 0xdbff) {
+      const next = value.charCodeAt(++index);
+      if (!(next >= 0xdc00 && next <= 0xdfff)) return false;
+    } else if (code >= 0xdc00 && code <= 0xdfff) return false;
+  }
+  return utf8ByteLength(value) <= EXTENSION_TASK_MAX_ARGUMENT_BYTES;
+}
+
 /** Canonical UTF-8 budgets for one text-preview request and validated result. */
 export const EXTENSION_PREVIEW_MAX_INPUT_BYTES = 10 * 1024 * 1024;
 /** Maximum decoded source bytes for one binary preview document. */
@@ -35,29 +52,7 @@ export const EXTENSION_JSON_MAX_DEPTH = 60;
 export const EXTENSION_JSON_MAX_NODES = 1_000_000 - 16;
 export const EXTENSION_JSON_MAX_KEY_CODE_UNITS = 256;
 
-function utf8ByteLength(value: string): number {
-  let bytes = 0;
-  for (let index = 0; index < value.length; index += 1) {
-    const code = value.charCodeAt(index);
-    if (code <= 0x7f) {
-      bytes += 1;
-    } else if (code <= 0x7ff) {
-      bytes += 2;
-    } else if (
-      code >= 0xd800
-      && code <= 0xdbff
-      && index + 1 < value.length
-      && value.charCodeAt(index + 1) >= 0xdc00
-      && value.charCodeAt(index + 1) <= 0xdfff
-    ) {
-      bytes += 4;
-      index += 1;
-    } else {
-      bytes += 3;
-    }
-  }
-  return bytes;
-}
+import { utf8ByteLength } from './utf8.js';
 
 function jsonStringByteLength(value: string): number {
   for (let index = 0; index < value.length; index += 1) {

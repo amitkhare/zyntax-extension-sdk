@@ -1,4 +1,29 @@
 import type { ExtensionCancellationToken, ExtensionJsonObject } from "../contract.js";
+import type { ExtensionProjectScope } from "./projectContexts.js";
+import type { ExtensionTaskEnvironmentValue } from "./taskSessions.js";
+
+/** Only vault-backed references enter a prepared process; never raw credentials or host paths. */
+export interface ExtensionProcessInputs {
+  readonly environment: Readonly<Record<string, Extract<ExtensionTaskEnvironmentValue, { readonly kind: "secret" }>>>;
+}
+
+export interface ExtensionProcessPrepareRequest {
+  /** Must resolve to the current trusted Explorer project. */
+  readonly project: ExtensionProjectScope;
+  /** This extension's declared tool requirement, exposing process.framed-json. */
+  readonly tool: string;
+  /** A signed entrypoint in that tool; no caller-supplied argv or executable. */
+  readonly entrypoint: string;
+  /** Requires secrets permission; reserved execution/routing environment keys are rejected. */
+  readonly inputs?: ExtensionProcessInputs;
+  /** Opts this native runtime into the private credential control channel. Requires secrets. */
+  readonly credentials?: true;
+}
+
+export interface ExtensionPreparedProcess {
+  /** Single-use authority sealed to this caller's exact activation, principal and project. */
+  readonly ticket: string;
+}
 
 /** Opaque owner-scoped managed process; no PID, native path or executable authority. */
 export interface ExtensionProcessSnapshot {
@@ -26,6 +51,18 @@ export interface ExtensionProcessUpdate {
  * state; the host owns bounded framing, backpressure, managed execution and cleanup.
  */
 export interface ExtensionProcessesApi {
+  /**
+   * Prepare this extension's own declared managed tool without starting it. Requires
+   * processes.execute and tools.execute; tool identity, entrypoint and optional secret
+   * references are validated natively and checked again when the process is opened.
+   * HOME remains generation-scoped tool scratch. With storage permission, native
+   * jobs, tasks and services also receive ZYNTAX_EXTENSION_DATA: a host-assigned
+   * owner-stable directory for durable state. Without storage permission no data
+   * directory is created or exposed.
+   * Data survives project closure, disable, updates and reset; uninstall removes it
+   * after process cleanup. This is storage ownership, not an OS process sandbox.
+   */
+  prepare(request: ExtensionProcessPrepareRequest, cancellation: ExtensionCancellationToken): Promise<ExtensionPreparedProcess>;
   /**
    * Consumes a ticket issued by a host provider broker, never a caller-supplied executable.
    * Both the provider's tool authority and the consumer's activation/project are enforced.

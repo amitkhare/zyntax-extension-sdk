@@ -19,9 +19,17 @@ export type ExtensionTaskPath =
       readonly path: string;
     };
 
+/** Command/runtime literals permit tab, CR and LF, with at most 16 KiB UTF-8 per
+ * literal and 64 KiB total resolved argv (including runtime prefixes). NUL,
+ * other ISO controls and malformed Unicode are rejected. There are at most
+ * 32 caller arguments. Managed-tool literals retain their 512-code-unit,
+ * control-free limit; these relaxed rules never change runtime routing.
+ */
 export type ExtensionTaskArgument = string | ExtensionTaskPath;
 
-/** Secret values stay private; only their references may appear in environment bindings. */
+/** Secret values stay private; only their references may appear in environment bindings.
+ * Environment literals retain their 512-code-unit, control-free limit on every route.
+ */
 export type ExtensionTaskEnvironmentValue = ExtensionTaskArgument
   | { readonly kind: "secret"; readonly secret: string };
 
