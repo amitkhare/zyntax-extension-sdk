@@ -23,6 +23,9 @@ import type {
   ExtensionWorkspaceDocumentRequest,
 } from "./contracts/projectContexts.js";
 import type { ExtensionTasksApi } from "./contracts/taskSessions.js";
+import type { ExtensionDebugApi } from "./contracts/debugSessions.js";
+import type { ExtensionProcessesApi } from "./contracts/processSessions.js";
+import type { ExtensionEditorApi } from "./contracts/editor.js";
 import type { ExtensionExtensionsApi, ExtensionSecretsApi } from "./contracts/extensionSetup.js";
 import type { EXTENSION_NOTEBOOK_KERNEL_PROTOCOL } from "./notebookKernelProtocol.js";
 import type {
@@ -31,6 +34,9 @@ import type {
 } from "./contracts/runtimes.js";
 
 export type * from "./contracts/manifest.js";
+export type * from "./contracts/debugSessions.js";
+export type * from "./contracts/processSessions.js";
+export type * from "./contracts/editor.js";
 export * from "./contracts/managedTools.js";
 export { EXTENSION_PROVIDER_METHODS } from "./providerMethods.js";
 export type { ExtensionProviderMethod } from "./providerMethods.js";
@@ -1173,6 +1179,9 @@ export interface ExtensionHostCapabilityMap {
   files: ExtensionFilesApi;
   workbench: ExtensionWorkbenchApi;
   "tasks.execute": ExtensionTasksApi;
+  "debug.execute": ExtensionDebugApi;
+  "processes.execute": ExtensionProcessesApi;
+  editor: ExtensionEditorApi;
   "extensions.manage": ExtensionExtensionsApi;
   secrets: ExtensionSecretsApi;
   "workspace.read": ExtensionWorkspaceReadApi;

@@ -612,10 +612,72 @@ resolves the native path only when it sends the DAP launch or attach request.
 Providers and manifests never contain app-private filesystem paths.
 
 For a launch field which the user must select, use
-`debugProjectPath(id, label, kind)`. Zyntax reviews and persists the selected
+`debugProjectPath(id, label, kind)`. The consumer extension can persist the selected
 canonical document URI per project. The symbolic slot remains in provider
-requests; only the managed DAP host resolves it to a native path immediately
-before adapter launch.
+requests; only the generic managed transport resolves it to a native path when
+sending the protocol message.
+
+SDK `1.0.29` adds provider preparation (`debug.execute`), protocol-neutral framed
+processes (`processes.execute`) and owner-scoped editor integration (`editor`).
+An optional debugger extension owns its UI, DAP request sequencing, protocol state,
+breakpoints, watches, inspection and console. The core retains only provider/tool
+authority, project trust, bounded transport, process cleanup and shared editor
+rendering; it does not implement a second debugger engine or mandatory panel.
+
+`context({ project: null }, cancellation)` reads the Explorer project, current
+document/language and available paired configuration/adapter providers. A
+selected scope is accepted only when it resolves to that same
+Explorer project; another root is rejected explicitly. Refresh context when
+opening the view or refreshing configurations. No project is represented by
+`projectUri: null`, not by silently picking a folder.
+
+`configurations` returns provider configurations with opaque launch IDs;
+`bindConfiguration` binds an extension-stored configuration to the current
+provider. The host keeps provider identity private and rejects launch IDs after
+that provider changes. `selectPath` reviews a declared `$projectPath` slot and
+returns a project-confined canonical URI (or `null` when dismissed). `prepare`
+accepts previously persisted URI selections for that project's declared path slots;
+it revalidates each selection's declared kind and no-follow project confinement,
+rejecting undeclared slots. Valid saved selections need no new picker or per-launch
+confirmation. It revalidates project trust and provider binding, then resolves the
+configuration and descriptor exactly once through that provider. It returns the
+configuration plus an opaque single-use process ticket sealed to the provider,
+consumer and project. Tagged document paths remain symbolic. Callers cannot claim
+another provider's executable or managed-tool authority.
+
+`processes.execute.open(ticket)` consumes that authority to open a managed
+Content-Length framed JSON process. Inspect its returned `state` and `error`: a
+startup failure after a managed handle exists can return a terminated snapshot,
+whose ID remains usable for cleanup retries. Failures before a handle exists and
+cancelled opens reject. `send` writes one bounded JSON frame, resolving
+structured `{$documentPath: canonicalUri}` references through the trusted project
+with no-follow confinement. The host does not interpret DAP/LSP commands.
+`observe(process, cursor, cancellation)` waits for ordered frames and lifecycle
+changes without timer polling. Zero starts observation; subsequent calls acknowledge
+the last returned cursor. Unsafe, future or expired cursors fail explicitly.
+Queues are bounded and lossless: overflow stops the process with an explicit
+`error`, never silently drops protocol messages. Cancelling observation or hiding
+a panel does not stop execution. Project closure, trust loss, provider removal
+or owner disposal does. `stop` retries failed cleanup (`cleanupPending`);
+`release` discards results only after termination and complete cleanup.
+
+`editor.context` supplies the active source and modified documents. `save` flushes
+that project's editors. `replaceMarkers` publishes a named owner-scoped group of
+themed circles/arrows and optional line highlights, using one-based source
+coordinates from 1 through 2147483647. Each call accepts up to 512 markers with
+unique IDs (192 characters), a group name (96), labels (256) and canonical project
+URIs (4096). These strings must be nonempty and contain no control characters.
+Shared marker-count, group-count and encoded-byte capacity limits fail explicitly;
+valid per-call input does not reserve global capacity. Interactive groups receive
+gutter clicks; mapped marker changes
+follow edits. `observe` batches context, click and marker events. Context and group
+snapshots may coalesce, but click loss/queue overflow is explicit; cursor zero
+resynchronizes current context and marker groups. The extension stores its own
+annotation meaning and settings. `reveal` navigates to a project-confined source;
+`resolvePath` maps an adapter's path data to a validated canonical URI or `null`,
+never filesystem authority outside the project. No breakpoint-specific storage or
+debug session state is required in core. Generic `bug`, `pause`, `stop`,
+`step-over`, `step-into` and `step-out` workbench icons follow the active app theme.
 
 Providers with `workspace.read` can query the host-owned project index through
 `findFiles({ project, include, exclude?, maxResults }, cancellation)`. `project: null`

@@ -7,6 +7,9 @@ export const EXTENSION_HOST_API_METHODS = Object.freeze({
   secrets: Object.freeze(["request", "get", "forget"] as const),
   workbench: Object.freeze(["updatePanel", "reveal", "close", "presentation", "resolveIcons"] as const),
   "tasks.execute": Object.freeze(["list", "sessions", "start", "observe", "reveal", "stop", "release"] as const),
+  "debug.execute": Object.freeze(["context", "configurations", "bindConfiguration", "selectPath", "prepare"] as const),
+  "processes.execute": Object.freeze(["open", "send", "observe", "stop", "release", "sessions"] as const),
+  editor: Object.freeze(["context", "replaceMarkers", "observe", "reveal", "resolvePath", "save"] as const),
   "extensions.manage": Object.freeze(["inspect", "requestInstall"] as const),
   "workspace.read": Object.freeze(["relativePath", "readText", "readTextIfExists", "findFiles"] as const),
   "workspace.write": Object.freeze(["applyEdits"] as const),
@@ -38,4 +41,6 @@ export const EXTENSION_HOST_API_INTERACTIVE_METHODS = Object.freeze([
   "secrets:request", "extensions.manage:requestInstall", "terminal.packages:requestTransaction",
   "terminal.packages:refreshStack", "terminal.packages:waitTransaction",
   "tasks.execute:start", "tasks.execute:observe", "commands.execute:execute",
+  "debug.execute:selectPath", "debug.execute:prepare", "processes.execute:open",
+  "processes.execute:observe", "editor:observe", "editor:save",
 ] as const satisfies readonly ExtensionHostMethodId[]);

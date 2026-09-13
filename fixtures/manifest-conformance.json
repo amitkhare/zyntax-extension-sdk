@@ -47,6 +47,25 @@
       { "capability": "workspace.read", "method": "readText", "valid": true, "interactive": false },
       { "capability": "files", "method": "select", "valid": true, "interactive": true },
       { "capability": "tasks.execute", "method": "observe", "valid": true, "interactive": true },
+      { "capability": "debug.execute", "method": "context", "valid": true, "interactive": false },
+      { "capability": "debug.execute", "method": "configurations", "valid": true, "interactive": false },
+      { "capability": "debug.execute", "method": "bindConfiguration", "valid": true, "interactive": false },
+      { "capability": "debug.execute", "method": "selectPath", "valid": true, "interactive": true },
+      { "capability": "debug.execute", "method": "prepare", "valid": true, "interactive": true },
+      { "capability": "debug.execute", "method": "start", "valid": false, "interactive": false },
+      { "capability": "processes.execute", "method": "open", "valid": true, "interactive": true },
+      { "capability": "processes.execute", "method": "send", "valid": true, "interactive": false },
+      { "capability": "processes.execute", "method": "observe", "valid": true, "interactive": true },
+      { "capability": "processes.execute", "method": "stop", "valid": true, "interactive": false },
+      { "capability": "processes.execute", "method": "release", "valid": true, "interactive": false },
+      { "capability": "processes.execute", "method": "sessions", "valid": true, "interactive": false },
+      { "capability": "editor", "method": "context", "valid": true, "interactive": false },
+      { "capability": "editor", "method": "replaceMarkers", "valid": true, "interactive": false },
+      { "capability": "editor", "method": "observe", "valid": true, "interactive": true },
+      { "capability": "editor", "method": "reveal", "valid": true, "interactive": false },
+      { "capability": "editor", "method": "resolvePath", "valid": true, "interactive": false },
+      { "capability": "editor", "method": "save", "valid": true, "interactive": true },
+      { "capability": "debug.execute", "method": "spawn", "valid": false, "interactive": false },
       { "capability": "terminal.packages", "method": "refreshStack", "valid": true, "interactive": true },
       { "capability": "terminal.packages", "method": "waitTransaction", "valid": true, "interactive": true },
       { "capability": "workbench", "method": "presentation", "valid": true, "interactive": false },
@@ -2164,6 +2183,30 @@
             "kind": "fileOpener", "id": "document-viewer", "placement": "explorer.file",
             "label": "Open document", "icon": "file", "extensions": [".pdf"],
             "filenames": [], "mimeType": "application/pdf", "requiredPermissions": []
+          }]
+        }
+      }
+    },
+    {
+      "id": "debug-workbench-valid",
+      "area": "workbench",
+      "valid": true,
+      "patch": {
+        "permissions": ["debug.execute", "editor", "processes.execute", "workbench"],
+        "contributes": {
+          "workbench": [{
+            "kind": "panel", "id": "debug-tools", "placement": "dialog",
+            "title": "Debugger", "icon": "bug",
+            "view": {
+              "kind": "list", "ariaLabel": "Debug controls",
+              "items": [
+                { "id": "pause", "label": "Pause", "icon": "pause" },
+                { "id": "stop", "label": "Stop", "icon": "stop" },
+                { "id": "step-over", "label": "Step over", "icon": "step-over" },
+                { "id": "step-into", "label": "Step into", "icon": "step-into" },
+                { "id": "step-out", "label": "Step out", "icon": "step-out" }
+              ]
+            }
           }]
         }
       }
